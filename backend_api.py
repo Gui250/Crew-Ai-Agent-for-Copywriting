@@ -18,12 +18,22 @@ sys.path.insert(0, str(project_path))
 # Carrega variáveis de ambiente
 load_dotenv(override=False)
 
-# Verifica OPENAI_API_KEY
-if not os.getenv('OPENAI_API_KEY'):
-    raise ValueError("OPENAI_API_KEY não encontrada nas variáveis de ambiente!")
+# Verifica OPENAI_API_KEY (mas não para a execução, apenas avisa)
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+if not OPENAI_API_KEY:
+    import sys
+    print("⚠️ AVISO: OPENAI_API_KEY não encontrada nas variáveis de ambiente!", file=sys.stderr)
+    print("⚠️ A API não funcionará sem esta chave. Configure no Render.", file=sys.stderr)
+    # Não para a execução aqui, deixa o FastAPI iniciar para mostrar erro mais claro
 
-from crew import CreateCrewProject
-from crewai import Crew, Process
+try:
+    from crew import CreateCrewProject
+    from crewai import Crew, Process
+except ImportError as e:
+    import sys
+    print(f"❌ ERRO ao importar módulos da crew: {e}", file=sys.stderr)
+    print(f"❌ Caminho verificado: {project_path}", file=sys.stderr)
+    raise
 
 app = FastAPI(title="AI Marketing Crew API", version="1.0.0")
 
@@ -79,6 +89,13 @@ async def generate_copy(request: CopyRequest):
     """
     Gera copywriting usando a crew de copywriting
     """
+    # Verifica OPENAI_API_KEY antes de processar
+    if not os.getenv('OPENAI_API_KEY'):
+        raise HTTPException(
+            status_code=500,
+            detail="OPENAI_API_KEY não configurada. Configure esta variável no Render."
+        )
+    
     try:
         # Prepara os inputs
         inputs = {
@@ -132,6 +149,13 @@ async def generate_dashboard(request: DashboardRequest):
     """
     Gera código de dashboard Streamlit usando a crew de BI
     """
+    # Verifica OPENAI_API_KEY antes de processar
+    if not os.getenv('OPENAI_API_KEY'):
+        raise HTTPException(
+            status_code=500,
+            detail="OPENAI_API_KEY não configurada. Configure esta variável no Render."
+        )
+    
     try:
         # Prepara os inputs
         inputs = {
@@ -173,6 +197,17 @@ async def generate_dashboard(request: DashboardRequest):
 
 if __name__ == "__main__":
     import uvicorn
+    import sys
+    
+    # Verifica OPENAI_API_KEY antes de iniciar
+    if not os.getenv('OPENAI_API_KEY'):
+        print("❌ ERRO: OPENAI_API_KEY não encontrada!", file=sys.stderr)
+        print("❌ Configure esta variável no Render: Settings > Environment Variables", file=sys.stderr)
+        sys.exit(1)
+    
     port = int(os.getenv("PORT", 8000))
+    print(f"🚀 Iniciando servidor na porta {port}...", file=sys.stderr)
+    print(f"✅ OPENAI_API_KEY configurada: {'Sim' if os.getenv('OPENAI_API_KEY') else 'Não'}", file=sys.stderr)
+    
     uvicorn.run(app, host="0.0.0.0", port=port)
 
