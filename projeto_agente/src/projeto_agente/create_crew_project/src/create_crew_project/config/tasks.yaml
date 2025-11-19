@@ -1,98 +1,130 @@
 research_task:
   description: >
-    Realizar uma AUDITORIA CRÍTICA na URL de referência fornecida: {url}
-    focada no nicho: {topic}.
+    Sua missão é realizar uma AUDITORIA CRÍTICA E ESTRATÉGICA na URL fornecida: {url},
+    considerando exclusivamente o nicho: {topic} e o público {target_audience}.
 
-    PASSO 1: ACESSO À URL
-    IMPORTANTE: Você tem acesso à ferramenta "Read website content" (também conhecida como "ScrapeWebsiteTool").
-    Para usar esta ferramenta, você DEVE chamar a ação "Read website content" com o parâmetro "website_url" contendo a URL completa.
-    Exemplo de uso correto: Use a ação "Read website content" com website_url="{url}".
+    Você é o olhar clínico e implacável do time. O objetivo NÃO é resumir o site,
+    mas dissecar sua lógica de vendas para revelar:
 
-    REGRAS CRÍTICAS SOBRE O USO DA FERRAMENTA:
-    - NUNCA use "Action 'N/A'", "Action 'None'", ou qualquer variação. Essas ações NÃO EXISTEM.
-    - A ÚNICA ação disponível para ler websites é "Read website content".
-    - Se você tentar usar qualquer outra ação, receberá um erro e deve parar de tentar.
+    - Fraquezas emocionais
+    - Lacunas de persuasão
+    - Gatilhos mentais ausentes
+    - Promessas frágeis
+    - Objeções ignoradas
+    - Oportunidades que eles desperdiçaram
 
-    Se a URL for válida (começar com http:// ou https://) e NÃO for "Nenhuma URL fornecida. Use seu conhecimento geral.":
-    - Use a ferramenta "Read website content" para ler o conteúdo de {url}
-    - Se o scraping retornar mensagens como "Just a moment... Enable JavaScript and cookies to continue", "conteúdo bloqueado", ou qualquer erro:
-      * NÃO tente usar outras ações ou ferramentas
-      * NÃO tente usar "Action 'N/A'" ou variações
-      * SIMPLESMENTE prossiga usando seu conhecimento geral sobre {topic} e {target_audience}
-      * Documente no briefing que a URL não pôde ser acessada devido a proteções, mas continue com a análise baseada em conhecimento geral
+    ➤ PASSO 1 — ACESSAR A URL (SEMPRE QUE POSSÍVEL)
+    Use SEMPRE a ferramenta "Read website content" (ScrapeWebsiteTool).
+    Chamada correta: **Use a ação "Read website content" com website_url="{url}"**.
 
-    Se a URL for inválida ou não fornecida:
-    - Use seu conhecimento geral sobre {topic} e {target_audience}
-    - Prossiga normalmente com o briefing
+    REGRAS INVIOLÁVEIS:
+    - Não existe “Action N/A” ou “Action None”. Nunca use isso.
+    - Se o scraping retornar bloqueios como "Just a moment...", "Enable JavaScript", etc:
+      * NÃO tente outra ação.
+      * NÃO invente ferramentas.
+      * Simplesmente informe que o acesso foi bloqueado e prossiga baseado em know-how avançado.
+    - Se a URL for inválida, vazia ou instruída como “nenhuma URL fornecida”, use apenas seu conhecimento sobre {topic}.
 
-    PASSO 2: ANÁLISE DE FRAQUEZAS (O que devemos fazer melhor)
-    Analise como eles abordam o problema e extraia insights chaves.
-    Identifique na página de referência:
-    - Objeções que eles ignoraram ou não responderam bem.
-    - Promessas que soam falsas ou exageradas (para evitarmos).
-    - Trechos onde a leitura fica chata ou confusa.
-    - Oportunidades de conexão emocional que eles perderam.
+    ➤ PASSO 2 — RAIOS-X PERSUASIVO (FRAQUEZAS DO CONCORRENTE)
+    Examine criticamente:
+      - As promessas: são fracas, exageradas ou genéricas?
+      - As dores: estão superficiais ou mal exploradas?
+      - Objeções ignoradas?
+      - Falta de prova social? Falta de urgência real?
+      - Explicações confusas ou técnicas demais?
+      - Falta de narrativa emocional?
+      - Falta de mecanismo único?
+      - Fomos capazes de sentir confiança? Por quê não?
 
-    PASSO 3: IDENTIFICAÇÃO DE ACERTOS
-    - O que eles fizeram bem que devemos modelar (mas não copiar)?
+    ➤ PASSO 3 — IDENTIFICAÇÃO DOS ACERTOS (MAS APENAS PARA MODELAGEM)
+    Liste o que fizeram bem (apenas princípios, nunca textos):
+      - Estrutura
+      - Clareza
+      - Mecanismos lógicos
+      - Storytelling
+      - Organização da informação
 
-    O objetivo não é resumir a página, mas CRITICÁ-LA construtivamente para que possamos criar um produto superior.
+    ➤ PASSO 4 — DOR, DESEJO E OBJEÇÕES
+    Mapeie:
+      - 3 dores que a página tenta atacar
+      - 3 desejos profundos do avatar
+      - 3 objeções prováveis que eles não souberam quebrar
 
-    Identifique as 3 principais dores, 3 desejos profundos e possíveis objeções de compra.
+    O objetivo final: fornecer munição para que o Copywriter crie algo muito mais forte.
 
-    OBSERVAÇÃO: Não use a ferramenta "Read website content" para analisar a página, use seu conhecimento geral sobre {topic} e {target_audience}.
   expected_output: >
-    Um "Relatório de Auditoria de Copy" contendo:
-    1. Lista de "Pontos Fracos da Referência" (O que não fazer).
-    2. Lista de "Oportunidades de Melhoria" (O que faremos no nosso).
-    3. Análise das 3 principais dores que a referência tentou atacar (e se conseguiu ou não).
+    **Relatório Final — Auditoria de Copy do Concorrente**
+    1. Pontos Fracos da Referência (o que nunca repetir).
+    2. Oportunidades de Melhoria (o que exploraremos com força).
+    3. As 3 principais dores identificadas.
+    4. Os 3 principais desejos profundos.
+    5. As objeções mal resolvidas.
+    6. Sumário tático para o Copywriter (insights acionáveis).
+
   agent: market_researcher
 
 copywriting_task:
   description: >
-    Escreva uma Carta de Vendas (Sales Page) DE ALTA CONVERSÃO para o MEU negócio/produto focado em: {topic}.
+    Você é o Copywriter Chefe. Seu trabalho é transformar a auditoria do pesquisador
+    em uma CARTA DE VENDAS COMPLETA, VERBOSA, PODEROSA e IMPOSSÍVEL DE IGNORAR.
 
-    CONTEXTO ESTRATÉGICO:
-    Você é um 'Cirurgião de Copy'. Você recebeu o relatório de autopsia do concorrente (feito pelo researcher).
-    Sua missão: Criar uma narrativa que torne a concorrência irrelevante.
-    Se o concorrente é "mais do mesmo", você será "a nova oportunidade".
+    Sua copy deve superar o concorrente em todos os pontos levantados.
+    A URL analisada é apenas REFERÊNCIA NEGATIVA. Nada deve ser copiado.
 
-    PASSO A PASSO DA CRIAÇÃO (Obrigatório seguir esta estrutura de Pitch):
+    ➤ ESTRUTURA OBRIGATÓRIA DO PITCH:
 
-    1. **A Grande Ideia (The One Thing):**
-       Comece definindo qual é o único conceito central da copy. (Ex: "Não é culpa sua", "O método antigo morreu").
+    1. **A Grande Ideia (The One Thing)**
+       - Declare a tese central que guiará toda a copy.
+       - Deve ser um conceito disruptivo, contra-intuitivo ou profundamente verdadeiro.
 
-    2. **Headline & Lead (Gatilho: Curiosidade + Promessa):**
-       Crie 3 opções de Headline que quebram o padrão.
-       O Lead (primeiros parágrafos) deve criar uma conexão imediata com o público específico ({target_audience}), mostrando que você entende a "dor secreta" deles melhor que eles mesmos.
+    2. **Headline & Lead (3 opções de headline)**
+       - Headline com curiosidade + promessa.
+       - Lead emocional que mostra que você entende a "dor secreta" do público {target_audience}.
+       - Faça o leitor pensar: "Finalmente alguém me entende."
 
-    3. **A 'Grande Mentira' do Mercado (Gatilho: Inimigo Comum):**
-       Identifique o que a referência analisada (e o mercado em geral) está fazendo errado.
-       Posicione o nosso produto não como uma "melhoria", mas como algo *diferente* e superior.
+    3. **A Grande Mentira do Mercado**
+       - Mostre o que o mercado (incluindo a referência) está fazendo errado.
+       - Destrua o “inimigo comum”.
+       - Mostre que nosso produto não é “melhoria”, é NOVA CATEGORIA.
 
-    4. **O Mecanismo Único (Gatilho: Prova Lógica):**
-       Explique COMO o {topic} funciona usando uma analogia nova. 
-       Dê um nome proprietário para o método (Ex: "Protocolo XYZ" ou "Sistema de 3 Pilares").
-       Isso gera autoridade instantânea.
+    4. **O Mecanismo Único**
+       - Apresente o Mecanismo Único do {topic}.
+       - Dê nome proprietário (ex: “Protocolo XYZ”).
+       - Use analogia inédita para explicar.
+       - Prove logicamente por que funciona.
 
-    5. **A Oferta Irresistível (Gatilho: Ganância + Valor Percebido):**
-       Não venda apenas o produto. Venda a transformação.
-       - Liste os entregáveis.
-       - Adicione Bônus que resolvam problemas futuros.
-       - Use 'Price Anchoring' (Ancoragem de Preço) para fazer o preço parecer ridículo de barato.
+    5. **A Oferta Irresistível**
+       - Liste entregáveis.
+       - Liste Bônus estratégicos que resolvem futuros problemas.
+       - Ancoragem de preço profissional:
+         * Valor real
+         * Preço padrão
+         * Investimento hoje (muito menor)
+       - Mostre a TRANSFORMAÇÃO final que o cliente alcança.
 
-    6. **Fechamento (Gatilho: Escassez e Urgência):**
-       Crie um motivo real para a pessoa agir AGORA (pode ser bônus por tempo limitado, vagas, ou o custo da inação).
+    6. **Fechamento com Escassez Verdadeira**
+       - Use urgência legítima (não falsa).
+       - Faça o leitor sentir que adiar = perder.
 
-    Copywriting que deve ser feito baseado na auditoria: {definicao_do_sistema}
-    OBSERVAÇÃO: Não use a ferramenta "Read website content" para analisar a página, use seu conhecimento geral sobre {topic} e {target_audience}.
+    ➤ REGRAS DE EXECUÇÃO:
+      - Escreva de forma verbosa, emocional e técnica ao mesmo tempo.
+      - Use storytelling sempre que couber.
+      - Insira gatilhos mentais de forma NATURAL (jamais forçada).
+      - Construa o texto como um advogado imbatível.
+
+    ➤ OBS IMPORTANTE:
+      NÃO use a ferramenta "Read website content".
+      Baseie-se apenas na auditoria fornecida e no seu conhecimento de {topic} + {target_audience}.
 
   expected_output: >
-    Um documento Markdown estruturado contendo:
-    1. A estratégia central definida (Big Idea).
-    2. A Copy Completa (Headline até o CTA).
-    3. Caixas de citação (`> Nota:`) explicando onde você aplicou correções baseadas na auditoria da concorrência.
-       (Ex: "> Nota: A referência não usou garantia, então aqui eu enfatizei uma Garantia de Risco Zero para remover o medo da compra.").
+    Documento Markdown contendo:
+    1. A Big Idea.
+    2. As 3 Headlines.
+    3. A Carta de Vendas completa (do lead ao CTA).
+    4. Notas explicativas com:
+       > Nota: Explicando onde você corrigiu falhas identificadas na auditoria.
+       (ex: "> Nota: A referência ignorou garantia, então inseri a Garantia XYZ aqui.")
+
   agent: lead_copywriter
 
 editing_task:
