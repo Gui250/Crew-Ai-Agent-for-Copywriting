@@ -8,9 +8,18 @@ research_task:
     Para usar esta ferramenta, você DEVE chamar a ação "Read website content" com o parâmetro "website_url" contendo a URL completa.
     Exemplo de uso correto: Use a ação "Read website content" com website_url="{url}".
 
+    REGRAS CRÍTICAS SOBRE O USO DA FERRAMENTA:
+    - NUNCA use "Action 'N/A'", "Action 'None'", ou qualquer variação. Essas ações NÃO EXISTEM.
+    - A ÚNICA ação disponível para ler websites é "Read website content".
+    - Se você tentar usar qualquer outra ação, receberá um erro e deve parar de tentar.
+
     Se a URL for válida (começar com http:// ou https://) e NÃO for "Nenhuma URL fornecida. Use seu conhecimento geral.":
     - Use a ferramenta "Read website content" para ler o conteúdo de {url}
-    - Se o scraping não funcionar ou retornar conteúdo bloqueado, continue com seu conhecimento geral
+    - Se o scraping retornar mensagens como "Just a moment... Enable JavaScript and cookies to continue", "conteúdo bloqueado", ou qualquer erro:
+      * NÃO tente usar outras ações ou ferramentas
+      * NÃO tente usar "Action 'N/A'" ou variações
+      * SIMPLESMENTE prossiga usando seu conhecimento geral sobre {topic} e {target_audience}
+      * Documente no briefing que a URL não pôde ser acessada devido a proteções, mas continue com a análise baseada em conhecimento geral
 
     Se a URL for inválida ou não fornecida:
     - Use seu conhecimento geral sobre {topic} e {target_audience}

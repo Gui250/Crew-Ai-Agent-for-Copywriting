@@ -43,6 +43,7 @@ class CrewAIEventsFilter(logging.Filter):
             r'Expecting value.*line 1 column 1',
             r"Action 'None' don't exist",
             r"Action 'N/A' don't exist",
+            r"Action '.*' don't exist",  # Captura qualquer mensagem de ação inexistente
         ]
         
         for pattern in error_patterns:
@@ -165,6 +166,7 @@ class FilteredIO:
             r'\[CrewAIEventsBus\].*Sync handler error.*on_agent_logs_execution',
             r'\[CrewAIEventsBus\].*Expecting',
             r'\[CrewAIEventsBus\].*Expecting.*',
+            r'\[CrewAIEventsBus\].*',  # Captura qualquer mensagem do CrewAIEventsBus
             r'Expecting value: line 1 column 1 \(char 0\)',
             r'Expecting value.*line 1 column 1',
             r'Expecting.*',  # Captura qualquer erro que comece com "Expecting"
@@ -173,6 +175,7 @@ class FilteredIO:
             r'Sync handler error.*on_agent_logs_execution.*Expecting',
             r"Action 'None' don't exist",
             r"Action 'N/A' don't exist",
+            r"Action '.*' don't exist",  # Captura qualquer mensagem de ação inexistente
         ]
         
         for pattern in patterns_to_filter:
@@ -283,6 +286,27 @@ def disable_crewai_events():
                         raise
                 
                 CrewAIEventsBus._handle_sync = safe_sync_handler
+            
+            # Intercepta também métodos relacionados a eventos que podem gerar erros
+            # Tenta interceptar qualquer método que possa estar gerando o erro
+            for method_name in ['_handle_event', 'handle', 'emit', '_emit']:
+                if hasattr(CrewAIEventsBus, method_name):
+                    original_method = getattr(CrewAIEventsBus, method_name)
+                    if callable(original_method):
+                        def create_safe_handler(orig_method):
+                            def safe_handler(*args, **kwargs):
+                                try:
+                                    return orig_method(*args, **kwargs)
+                                except (ValueError, json.JSONDecodeError, Exception) as e:
+                                    error_str = str(e).lower()
+                                    if any(keyword in error_str for keyword in [
+                                        "expecting value", "json", "jsondecodeerror", 
+                                        "line 1 column 1", "char 0", "expecting"
+                                    ]):
+                                        return None
+                                    raise
+                            return safe_handler
+                        setattr(CrewAIEventsBus, method_name, create_safe_handler(original_method))
                 
         except (ImportError, AttributeError) as e:
             # Log silencioso se não conseguir importar
@@ -312,7 +336,7 @@ def disable_crewai_events():
                     if any(keyword in message_lower for keyword in [
                         "crewai eventsbus", "on_agent_logs_execution",
                         "expecting value", "expecting", "jsondecodeerror",
-                        "sync handler error"
+                        "sync handler error", "action", "don't exist"
                     ]):
                         return  # Não emite a mensagem
                     # Para outras mensagens, usa o handler padrão
