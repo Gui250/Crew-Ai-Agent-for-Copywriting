@@ -3,11 +3,21 @@ research_task:
     Realizar uma AUDITORIA CRÍTICA na URL de referência fornecida: {url}
     focada no nicho: {topic}.
 
-    PASSO 1: ACESSO
-    Use a ferramenta de scraping para ler o conteúdo de {url}.
-    (Se a URL for inválida ou o scraping falhar, simule uma análise baseada no que é comum e clichê nesse mercado).
+    PASSO 1: ACESSO À URL
+    IMPORTANTE: Você tem acesso à ferramenta "Read website content" (também conhecida como "ScrapeWebsiteTool").
+    Para usar esta ferramenta, você DEVE chamar a ação "Read website content" com o parâmetro "website_url" contendo a URL completa.
+    Exemplo de uso correto: Use a ação "Read website content" com website_url="{url}".
+
+    Se a URL for válida (começar com http:// ou https://) e NÃO for "Nenhuma URL fornecida. Use seu conhecimento geral.":
+    - Use a ferramenta "Read website content" para ler o conteúdo de {url}
+    - Se o scraping não funcionar ou retornar conteúdo bloqueado, continue com seu conhecimento geral
+
+    Se a URL for inválida ou não fornecida:
+    - Use seu conhecimento geral sobre {topic} e {target_audience}
+    - Prossiga normalmente com o briefing
 
     PASSO 2: ANÁLISE DE FRAQUEZAS (O que devemos fazer melhor)
+    Analise como eles abordam o problema e extraia insights chaves.
     Identifique na página de referência:
     - Objeções que eles ignoraram ou não responderam bem.
     - Promessas que soam falsas ou exageradas (para evitarmos).
@@ -18,6 +28,8 @@ research_task:
     - O que eles fizeram bem que devemos modelar (mas não copiar)?
 
     O objetivo não é resumir a página, mas CRITICÁ-LA construtivamente para que possamos criar um produto superior.
+
+    Identifique as 3 principais dores, 3 desejos profundos e possíveis objeções de compra.
   expected_output: >
     Um "Relatório de Auditoria de Copy" contendo:
     1. Lista de "Pontos Fracos da Referência" (O que não fazer).
