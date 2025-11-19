@@ -14,14 +14,13 @@ class CreateCrewProject():
     agents: List[BaseAgent]
     tasks: List[Task]
 
-    # 2. Instanciar a ferramenta de Scraping
-    scrape_tool = ScrapeWebsiteTool()
-    
     @agent
     def market_researcher(self) -> Agent:
+        # Inicializa a ferramenta de scraping diretamente
+        scrape_tool = ScrapeWebsiteTool()
         return Agent(
             config=self.agents_config['market_researcher'], # type: ignore[index]
-            tools=[self.scrape_tool],  # Ferramenta de scraping para pesquisar URLs
+            tools=[scrape_tool],  # Ferramenta de scraping para pesquisar URLs
             verbose=True
         )
 
@@ -39,6 +38,22 @@ class CreateCrewProject():
             verbose=True
         )
 
+    @agent
+    def bi_analyst(self) -> Agent:
+        return Agent(
+            config=self.agents_config['bi_analyst'],
+            verbose=True,
+            llm="gpt-4o" # Recomendado GPT-4o ou Claude para gerar código de gráficos complexos
+        )
+
+
+    @task
+    def dashboard_task(self) -> Task:
+        return Task(
+            config=self.tasks_config['dashboard_task'],
+            agent=self.bi_analyst()
+        )
+        
     @task
     def market_research_task(self) -> Task:
         return Task(
@@ -69,7 +84,7 @@ class CreateCrewProject():
 
     @crew
     def crew(self) -> Crew:
-        """Creates the CreateCrewProject crew"""
+        """Creates the CreateCrewProject crew with all tasks"""
         # To learn how to add knowledge sources to your crew, check out the documentation:
         # https://docs.crewai.com/concepts/knowledge#what-is-knowledge
 
@@ -78,5 +93,42 @@ class CreateCrewProject():
             tasks=self.tasks, # Automatically created by the @task decorator
             process=Process.sequential,
             verbose=True,
+            # Habilitar tracing para debug (opcional)
+            # tracing=True,  # Descomente para habilitar tracing detalhado
             # process=Process.hierarchical, # In case you wanna use that instead https://docs.crewai.com/how-to/Hierarchical/
+        )
+    
+    def copywriting_crew(self) -> Crew:
+        """Creates a crew specifically for copywriting (without dashboard_task)"""
+        # Cria os agentes necessários para copywriting
+        copywriting_agents = [
+            self.market_researcher(),  # Para pesquisa
+            self.lead_copywriter(),    # Para escrita
+            self.chief_editor()        # Para revisão
+        ]
+        
+        # Filtra apenas as tasks de copywriting na ordem correta:
+        # 1. research_task - pesquisa com URL (se fornecida) ou conhecimento geral
+        # 2. copywriting_task - escreve o copy baseado no briefing
+        # 3. editing_task - revisa e finaliza o copy
+        copywriting_tasks = [
+            self.research_task(),      # Pesquisa inicial (com suporte a URL)
+            self.copywriting_task(),   # Escrita do copy
+            self.editing_task()        # Revisão final
+        ]
+        
+        return Crew(
+            agents=copywriting_agents,
+            tasks=copywriting_tasks,
+            process=Process.sequential,
+            verbose=True,
+        )
+    
+    def dashboard_crew(self) -> Crew:
+        """Creates a crew specifically for dashboard generation"""
+        return Crew(
+            agents=[self.bi_analyst()],
+            tasks=[self.dashboard_task()],
+            process=Process.sequential,
+            verbose=True,
         )

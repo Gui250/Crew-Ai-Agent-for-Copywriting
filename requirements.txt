@@ -7,3 +7,6 @@ imbox
 setuptools
 requests
 streamlit
+plotly
+pandas
+chardet

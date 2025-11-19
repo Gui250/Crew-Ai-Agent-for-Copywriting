@@ -13,10 +13,11 @@ market_research_task:
 
 copywriting_task:
   description: >
-    Utilizando o relatório de briefing criado na tarefa anterior, escreva um texto completo
-    para a plataforma {platform}. Utilize o framework PAS (Problema, Agitação, Solução).
-    O texto deve ser envolvente, focar nos benefícios e não apenas nas características,
-    e terminar com uma chamada para ação (CTA) clara.
+    Analise o seguinte produto técnico: {topic}.
+    1. Destrinche o mecanismo único desse produto (como ele funciona) usando uma analogia que uma criança de 10 anos entenderia.
+    2. Encontre o ângulo emocional oculto (o que o cliente realmente deseja, não o que ele diz que quer).
+    3. Escreva um Pitch de Vendas de 300 palavras usando a estrutura: Gancho (Quebra de Padrão) -> História -> Mecanismo Único -> Oferta Irresistível.
+    O tom deve ser provocativo, inteligente e persuasivo.
     Copywriting que deve ser feito baseado no briefing: {definicao_do_sistema}
   expected_output: >
     Um rascunho completo do texto em formato Markdown, incluindo sugestões de 
@@ -40,37 +41,13 @@ research_task:
 
     IMPORTANTE: O usuário forneceu uma URL de referência: {url}
 
-    REGRAS PARA USAR A FERRAMENTA DE SCRAPING:
+    Se a URL for válida (começar com http:// ou https://) e NÃO for "Nenhuma URL fornecida. Use seu conhecimento geral.":
+    - Use a ferramenta de scraping disponível para você para ler o conteúdo da URL
+    - Se o scraping não funcionar ou retornar conteúdo bloqueado, continue com seu conhecimento geral
 
-    CASO 1 - URL INVÁLIDA OU NÃO FORNECIDA:
-    Se a URL for "Nenhuma URL fornecida. Use seu conhecimento geral." ou estiver vazia:
-    - NÃO use a ferramenta de scraping
-    - NÃO tente criar ações customizadas
-    - Vá direto para a análise usando seu conhecimento geral sobre {topic} e {target_audience}
+    Se a URL for inválida ou não fornecida:
+    - Use seu conhecimento geral sobre {topic} e {target_audience}
     - Prossiga normalmente com o briefing
-
-    CASO 2 - URL VÁLIDA:
-    Se a URL começar com "http://" ou "https://" e NÃO for "Nenhuma URL fornecida...":
-    - Você DEVE tentar usar a ferramenta "Read website content"
-    - A ferramenta requer EXATAMENTE o parâmetro "website_url" (NUNCA use "url" ou outro nome)
-    - Formato OBRIGATÓRIO: {{"website_url": "{url}"}}
-    - Use EXATAMENTE a URL fornecida: {url}
-
-    Exemplo de uso correto:
-    Action: Read website content
-    Action Input: {{"website_url": "{url}"}}
-
-    CASO 3 - SCRAPING FALHOU:
-    Se o scraping retornar apenas mensagens como "Just a moment...", "Enable JavaScript", 
-    "Access denied" ou conteúdo vazio:
-    - Isso significa que o site bloqueou o acesso
-    - NÃO tente usar a ferramenta novamente
-    - NÃO crie ações customizadas
-    - Use seu conhecimento geral sobre o tópico {topic} e público-alvo {target_audience}
-    - Continue normalmente criando o briefing
-
-    LEMBRE-SE: Você só pode usar as ferramentas disponíveis. Se não conseguir fazer scraping,
-    simplesmente prossiga com seu conhecimento geral. NUNCA tente criar ações que não existem.
 
     Analise como eles abordam o problema e extraia insights chaves.
     Identifique as 3 principais dores, 3 desejos profundos e possíveis objeções de compra.
@@ -78,3 +55,20 @@ research_task:
     Um relatório de briefing detalhado contendo: Resumo da URL fornecida (se aplicável), Perfil do Cliente, 
     Lista de Dores/Desejos e 3 sugestões de "Ganchos" (Hooks).
   agent: market_researcher
+# ... suas outras tasks ...
+
+dashboard_task:
+  description: >
+    Analise os seguintes indicadores de marketing fornecidos: {data_context}.
+
+    Com base nesses dados, escreva um script Python completo usando a biblioteca Streamlit (`st`)
+    para gerar um dashboard visual.
+
+    Requisitos:
+    1. Use `st.columns` para exibir os KPIs principais (Cards com números grandes) no topo.
+    2. Crie pelo menos 2 gráficos visuais (ex: Vendas vs Leads, Distribuição de Custo) usando `st.bar_chart`, `st.line_chart` ou `plotly`.
+    3. O código deve ser autocontido (importar streamlit, pandas se necessário).
+    4. Se dados específicos foram fornecidos em data_context, use EXATAMENTE os números fornecidos. Caso contrário, use dados de exemplo relevantes para marketing.
+  expected_output: >
+    Um bloco de código Markdown (```python ... ```) contendo o script do dashboard.
+  agent: bi_analyst

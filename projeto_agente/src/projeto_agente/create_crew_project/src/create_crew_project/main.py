@@ -96,8 +96,42 @@ def run():
     }
 
     try:
-        CreateCrewProject().crew().kickoff(inputs=inputs)
+        print("🚀 Iniciando execução da crew de copywriting...")
+        print(f"📋 Inputs fornecidos: {list(inputs.keys())}")
+        
+        # Validação dos inputs necessários para copywriting
+        required_inputs = ['topic', 'target_audience', 'platform', 'tone', 'url', 'definicao_do_sistema']
+        missing_inputs = [inp for inp in required_inputs if inp not in inputs]
+        if missing_inputs:
+            print(f"⚠️ Aviso: Alguns inputs podem estar faltando: {missing_inputs}")
+        
+        # Criar instância da crew
+        crew_instance = CreateCrewProject()
+        
+        # Usar crew de copywriting (sem dashboard_task) para evitar erro de data_context
+        crew_obj = crew_instance.copywriting_crew()
+        
+        print(f"👥 Agentes configurados: {len(crew_obj.agents)}")
+        print(f"📝 Tasks configuradas: {len(crew_obj.tasks)}")
+        print(f"📋 Tasks: {[task.description[:50] + '...' if len(task.description) > 50 else task.description for task in crew_obj.tasks]}")
+        
+        result = crew_obj.kickoff(inputs=inputs)
+        print("✅ Crew executada com sucesso!")
+        return result
     except Exception as e:
+        import traceback
+        print(f"\n❌ ERRO na execução da crew:")
+        print(f"Tipo do erro: {type(e).__name__}")
+        print(f"Mensagem: {str(e)}")
+        print(f"\n📜 Traceback completo:")
+        traceback.print_exc()
+        
+        # Verificar se é erro de template variable
+        if "template variable" in str(e).lower() or "not found in inputs" in str(e).lower():
+            print(f"\n💡 DICA: Parece ser um erro de variável de template faltando.")
+            print(f"   Verifique se todas as variáveis usadas nas tasks estão nos inputs.")
+            print(f"   Inputs fornecidos: {list(inputs.keys())}")
+        
         raise Exception(f"An error occurred while running the crew: {e}")
 
 
@@ -107,7 +141,8 @@ def train():
     """
     inputs = {
         "topic": "AI LLMs",
-        'current_year': str(datetime.now().year)
+        'current_year': str(datetime.now().year),
+        'data_context': 'Nenhum dado específico fornecido. Use conhecimento geral sobre métricas de marketing.'  # Valor padrão para dashboard_task
     }
     try:
         CreateCrewProject().crew().train(n_iterations=int(sys.argv[1]), filename=sys.argv[2], inputs=inputs)
@@ -131,7 +166,8 @@ def test():
     """
     inputs = {
         "topic": "AI LLMs",
-        "current_year": str(datetime.now().year)
+        "current_year": str(datetime.now().year),
+        'data_context': 'Nenhum dado específico fornecido. Use conhecimento geral sobre métricas de marketing.'  # Valor padrão para dashboard_task
     }
 
     try:
@@ -157,7 +193,8 @@ def run_with_trigger():
     inputs = {
         "crewai_trigger_payload": trigger_payload,
         "topic": "",
-        "current_year": ""
+        "current_year": "",
+        'data_context': 'Nenhum dado específico fornecido. Use conhecimento geral sobre métricas de marketing.'  # Valor padrão para dashboard_task
     }
 
     try:
