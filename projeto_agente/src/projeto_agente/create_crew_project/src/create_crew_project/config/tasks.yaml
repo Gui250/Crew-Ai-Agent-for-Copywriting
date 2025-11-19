@@ -48,27 +48,48 @@ research_task:
 
 copywriting_task:
   description: >
-    Escreva uma Carta de Vendas (Sales Page) COMPLETA para o MEU negócio/produto focado em: {topic}.
+    Escreva uma Carta de Vendas (Sales Page) DE ALTA CONVERSÃO para o MEU negócio/produto focado em: {topic}.
 
-    CONTEXTO CRUCIAL:
-    Você NÃO deve reescrever a página da URL analisada.
-    Você deve criar uma copy NOVA para o meu produto, mas usando o "Relatório de Auditoria" do pesquisador como guia estratégico.
+    CONTEXTO ESTRATÉGICO:
+    Você é um 'Cirurgião de Copy'. Você recebeu o relatório de autopsia do concorrente (feito pelo researcher).
+    Sua missão: Criar uma narrativa que torne a concorrência irrelevante.
+    Se o concorrente é "mais do mesmo", você será "a nova oportunidade".
 
-    INSTRUÇÕES:
-    1. Olhe para os "Pontos Fracos" que o pesquisador encontrou na referência. Sua copy deve resolver esses problemas de forma brilhante. (Ex: Se a referência é confusa, a sua deve ser ultra didática).
-    2. Destrinche o mecanismo único do MEU produto ({topic}).
-    3. Estrutura obrigatória:
-       - Headline (Promessa forte que bata na dor que a referência ignorou)
-       - Lead (História ou declaração que gere conexão imediata)
-       - A "Grande Mentira" (O erro comum do mercado que a referência comete e nós não)
-       - Solução/Mecanismo Único (Como o {topic} funciona)
-       - Oferta e Call to Action.
+    PASSO A PASSO DA CRIAÇÃO (Obrigatório seguir esta estrutura de Pitch):
 
-    Tom de voz: Provocativo, Seguro e Superior (sem ser arrogante).
+    1. **A Grande Ideia (The One Thing):**
+       Comece definindo qual é o único conceito central da copy. (Ex: "Não é culpa sua", "O método antigo morreu").
+
+    2. **Headline & Lead (Gatilho: Curiosidade + Promessa):**
+       Crie 3 opções de Headline que quebram o padrão.
+       O Lead (primeiros parágrafos) deve criar uma conexão imediata com o público específico ({target_audience}), mostrando que você entende a "dor secreta" deles melhor que eles mesmos.
+
+    3. **A 'Grande Mentira' do Mercado (Gatilho: Inimigo Comum):**
+       Identifique o que a referência analisada (e o mercado em geral) está fazendo errado.
+       Posicione o nosso produto não como uma "melhoria", mas como algo *diferente* e superior.
+
+    4. **O Mecanismo Único (Gatilho: Prova Lógica):**
+       Explique COMO o {topic} funciona usando uma analogia nova. 
+       Dê um nome proprietário para o método (Ex: "Protocolo XYZ" ou "Sistema de 3 Pilares").
+       Isso gera autoridade instantânea.
+
+    5. **A Oferta Irresistível (Gatilho: Ganância + Valor Percebido):**
+       Não venda apenas o produto. Venda a transformação.
+       - Liste os entregáveis.
+       - Adicione Bônus que resolvam problemas futuros.
+       - Use 'Price Anchoring' (Ancoragem de Preço) para fazer o preço parecer ridículo de barato.
+
+    6. **Fechamento (Gatilho: Escassez e Urgência):**
+       Crie um motivo real para a pessoa agir AGORA (pode ser bônus por tempo limitado, vagas, ou o custo da inação).
+
     Copywriting que deve ser feito baseado na auditoria: {definicao_do_sistema}
+
   expected_output: >
-    Um rascunho completo da Landing Page em formato Markdown. 
-    Deve incluir observações laterais do tipo: "> Nota: A referência falhou em explicar X, por isso aqui explicamos X com a analogia Y."
+    Um documento Markdown estruturado contendo:
+    1. A estratégia central definida (Big Idea).
+    2. A Copy Completa (Headline até o CTA).
+    3. Caixas de citação (`> Nota:`) explicando onde você aplicou correções baseadas na auditoria da concorrência.
+       (Ex: "> Nota: A referência não usou garantia, então aqui eu enfatizei uma Garantia de Risco Zero para remover o medo da compra.").
   agent: lead_copywriter
 
 editing_task:
