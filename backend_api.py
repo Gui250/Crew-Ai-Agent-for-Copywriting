@@ -15,14 +15,36 @@ from pathlib import Path
 class CrewAIEventsFilter(logging.Filter):
     def filter(self, record):
         # Suprime mensagens relacionadas a erros de eventos do CrewAI
-        message = str(record.getMessage())
-        if any(keyword in message for keyword in [
-            "CrewAIEventsBus",
+        message = str(record.getMessage()).lower()
+        
+        # Lista expandida de palavras-chave que indicam erros de eventos
+        error_keywords = [
+            "crewai eventsbus",
             "on_agent_logs_execution",
-            "Expecting value: line 1 column 1",
-            "JSONDecodeError"
-        ]):
+            "expecting value: line 1 column 1",
+            "expecting value",
+            "jsondecodeerror",
+            "action 'none' don't exist",
+            "action 'n/a' don't exist",
+            "sync handler error",
+        ]
+        
+        # Verifica se a mensagem contém alguma palavra-chave de erro
+        if any(keyword in message for keyword in error_keywords):
             return False  # Não registra esta mensagem
+        
+        # Verifica também por padrões regex
+        error_patterns = [
+            r'\[CrewAIEventsBus\].*',
+            r'Expecting value.*line 1 column 1',
+            r"Action 'None' don't exist",
+            r"Action 'N/A' don't exist",
+        ]
+        
+        for pattern in error_patterns:
+            if re.search(pattern, message, re.IGNORECASE):
+                return False  # Não registra esta mensagem
+        
         return True  # Registra outras mensagens
 
 # Aplica o filtro aos loggers do CrewAI
@@ -49,56 +71,111 @@ from io import StringIO
 import re
 
 class FilteredIO:
-    """IO wrapper que filtra mensagens específicas do CrewAI EventsBus de forma mais agressiva"""
+    """IO wrapper que filtra mensagens específicas do CrewAI EventsBus com buffer para capturar mensagens multi-linha"""
     def __init__(self, original_io):
         self.original_io = original_io
-        self.buffer = []
+        self.buffer = ""  # Buffer para acumular mensagens multi-linha
+        self.buffer_size_limit = 5000  # Limite do buffer para evitar acúmulo excessivo
     
     def write(self, text):
-        # Filtra mensagens relacionadas a erros de eventos do CrewAI
-        if text:
-            # Padrões mais abrangentes a filtrar
-            patterns_to_filter = [
-                r'\[CrewAIEventsBus\].*Sync handler error.*on_agent_logs_execution',
-                r'\[CrewAIEventsBus\].*Expecting',
-                r'Expecting value: line 1 column 1 \(char 0\)',
-                r'Expecting value.*line 1 column 1',
-                r'JSONDecodeError.*Expecting value',
-                r'JSONDecodeError',
-                r'on_agent_logs_execution.*Expecting',
-                r'Sync handler error.*on_agent_logs_execution',
-            ]
+        if not text:
+            return
+        
+        # Adiciona ao buffer
+        self.buffer += text
+        
+        # Limita o tamanho do buffer
+        if len(self.buffer) > self.buffer_size_limit:
+            # Mantém apenas as últimas linhas
+            lines = self.buffer.split('\n')
+            self.buffer = '\n'.join(lines[-50:])  # Mantém últimas 50 linhas
+        
+        # Verifica se deve filtrar baseado no buffer acumulado
+        should_filter = self._should_filter(self.buffer)
+        
+        # Se encontrar um erro de eventos, limpa o buffer e não escreve
+        if should_filter:
+            # Limpa o buffer completamente quando encontra erro
+            self.buffer = ""
+            return
+        
+        # Se o texto contém quebra de linha ou o buffer está grande, processa
+        if '\n' in text:
+            # Separa em linhas
+            lines = self.buffer.split('\n')
             
-            # Também verifica por palavras-chave sem regex (mais rápido)
-            keywords_to_filter = [
-                'CrewAIEventsBus',
-                'on_agent_logs_execution',
-                'Expecting value: line 1 column 1',
-                'JSONDecodeError',
-            ]
+            # Verifica cada linha e as linhas anteriores para contexto
+            output_lines = []
+            for i, line in enumerate(lines):
+                # Verifica a linha atual e contexto (linhas anteriores próximas)
+                context = '\n'.join(lines[max(0, i-3):i+1])
+                
+                if not self._should_filter(context):
+                    output_lines.append(line)
+                # Se for erro, não adiciona à saída
             
-            should_filter = False
+            # Escreve apenas as linhas que não foram filtradas
+            if output_lines:
+                output = '\n'.join(output_lines)
+                if output.strip():  # Só escreve se houver conteúdo
+                    self.original_io.write(output)
+                    self.original_io.flush()
             
-            # Verifica palavras-chave primeiro (mais rápido)
-            text_lower = text.lower()
-            for keyword in keywords_to_filter:
-                if keyword.lower() in text_lower:
-                    should_filter = True
-                    break
-            
-            # Se não encontrou por palavras-chave, tenta regex
-            if not should_filter:
-                for pattern in patterns_to_filter:
-                    if re.search(pattern, text, re.IGNORECASE | re.DOTALL):
-                        should_filter = True
-                        break
-            
-            if not should_filter:
-                # Escreve no IO original apenas se não for um erro de eventos
-                self.original_io.write(text)
+            # Limpa o buffer após processar
+            self.buffer = ""
+        elif len(self.buffer) > 500:
+            # Se o buffer está grande sem quebra de linha, verifica e escreve se OK
+            if not self._should_filter(self.buffer):
+                self.original_io.write(self.buffer)
                 self.original_io.flush()
+            self.buffer = ""
+    
+    def _should_filter(self, text):
+        """Verifica se o texto deve ser filtrado"""
+        if not text:
+            return False
+        
+        text_lower = text.lower()
+        
+        # Palavras-chave que indicam erro de eventos (verificação rápida)
+        error_keywords = [
+            'crewai eventsbus',
+            'on_agent_logs_execution',
+            'expecting value: line 1 column 1',
+            'expecting value',
+            'jsondecodeerror',
+            "action 'none' don't exist",
+            "action 'n/a' don't exist",
+        ]
+        
+        # Verifica palavras-chave primeiro (mais rápido)
+        for keyword in error_keywords:
+            if keyword in text_lower:
+                return True
+        
+        # Padrões regex mais específicos
+        patterns_to_filter = [
+            r'\[CrewAIEventsBus\].*Sync handler error',
+            r'\[CrewAIEventsBus\].*Expecting',
+            r'Expecting value: line 1 column 1 \(char 0\)',
+            r'Expecting value.*line 1 column 1',
+            r'JSONDecodeError.*Expecting',
+            r'Sync handler error.*on_agent_logs_execution',
+            r"Action 'None' don't exist",
+            r"Action 'N/A' don't exist",
+        ]
+        
+        for pattern in patterns_to_filter:
+            if re.search(pattern, text, re.IGNORECASE | re.DOTALL):
+                return True
+        
+        return False
     
     def flush(self):
+        # Antes de fazer flush, verifica o buffer restante
+        if self.buffer and not self._should_filter(self.buffer):
+            self.original_io.write(self.buffer)
+            self.buffer = ""
         self.original_io.flush()
     
     def __getattr__(self, name):
@@ -119,6 +196,10 @@ class SuppressCrewAIEventsErrors:
         return self
     
     def __exit__(self, exc_type, exc_val, exc_tb):
+        # Faz flush final dos buffers antes de restaurar
+        self.filtered_stderr.flush()
+        self.filtered_stdout.flush()
+        
         sys.stderr = self.original_stderr
         sys.stdout = self.original_stdout
         return False  # Não suprime exceções reais
