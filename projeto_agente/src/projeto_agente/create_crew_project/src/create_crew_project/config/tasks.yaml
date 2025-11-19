@@ -14,10 +14,15 @@ market_research_task:
 copywriting_task:
   description: >
     Analise o seguinte produto técnico: {topic}.
+
     1. Destrinche o mecanismo único desse produto (como ele funciona) usando uma analogia que uma criança de 10 anos entenderia.
+
     2. Encontre o ângulo emocional oculto (o que o cliente realmente deseja, não o que ele diz que quer).
+
     3. Escreva um Pitch de Vendas de 300 palavras usando a estrutura: Gancho (Quebra de Padrão) -> História -> Mecanismo Único -> Oferta Irresistível.
+
     O tom deve ser provocativo, inteligente e persuasivo.
+
     Copywriting que deve ser feito baseado no briefing: {definicao_do_sistema}
   expected_output: >
     Um rascunho completo do texto em formato Markdown, incluindo sugestões de 
