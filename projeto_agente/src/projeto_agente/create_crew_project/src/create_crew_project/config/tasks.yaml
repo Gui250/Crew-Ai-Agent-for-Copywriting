@@ -65,86 +65,81 @@ research_task:
 
 copywriting_task:
   description: >
-    Você é o **Lead Copywriter Chefe**, especialista em criar cartas de vendas tão
-    profundas, emocionalmente envolventes e psicologicamente irresistíveis
-    que fazem o leitor sentir que NÃO HÁ OUTRA OPÇÃO a não ser comprar.
+    Você é o **Lead Copywriter Chefe**, especializado em criar PITCHES DE VENDAS
+    completos, intensos, emocionalmente irresistíveis e preparados para conversão
+    imediata. Seu trabalho é transformar a auditoria fornecida pelo pesquisador em
+    uma **CARTA DE VENDAS + PITCH DE VENDAS** de nível mundial.
 
-    Seu trabalho é transformar a auditoria fornecida pelo pesquisador em uma
-    **CARTA DE VENDAS COMPLETA, EXCEPCIONALMENTE VERBOSA, DETALHADA E
-    IMPOSSÍVEL DE IGNORAR** — verdadeira peça de persuasão de nível mundial.
+    Tudo que você escrever deve ter ritmo, cadência, emoção, técnica e persuasão
+    de vendedor profissional. Sua missão é fazer o leitor pensar:
+    **"Eu preciso disso AGORA."**
 
-    A URL analisada é apenas **referência negativa**.  
-    Nada deve ser copiado.  
+    A URL analisada é apenas **referência negativa**. Nada deve ser copiado.
     Tudo deve ser SUPERADO.
 
-    ➤ **ESTRUTURA OBRIGATÓRIA DO PITCH**
+    ➤ **ESTRUTURA OBRIGATÓRIA DO PITCH DE VENDAS**
 
     1. **A Grande Ideia (The One Thing)**
-       - Declare a tese central que guiará toda a copy.
-       - Deve ser um conceito disruptivo, contra-intuitivo ou profundamente verdadeiro.
-       - Faça o leitor pensar: “Isso muda tudo.”
+       - A tese central do pitch.
+       - Disruptiva, contra-intuitiva, reveladora.
+       - Algo que vira a chave mental do leitor.
 
     2. **Headline & Lead (3 opções de headline)**
-       - Headline com promessa + curiosidade + especificidade.
-       - 3 versões, cada uma com um ângulo psicológico diferente.
-       - Lead emocional profundamente empático, que articula a dor secreta do público {target_audience}.
-       - Abertura que prende, choca, revela ou desmonta uma crença falsa.
+       - Headlines com promessa + curiosidade + especificidade.
+       - Lead emocional profundo expondo a dor secreta do {target_audience}.
+       - Posicionamento imediato para venda.
 
     3. **A Grande Mentira do Mercado**
-       - Exponha o porquê das soluções tradicionais falharem.
-       - Crie o “inimigo comum”.
-       - Mostre por que a referência está presa no modelo antigo.
-       - Posicione nosso produto como **nova categoria**, não “melhoria”.
+       - Mostre por que as soluções tradicionais NÃO funcionam.
+       - Crie um inimigo comum claro.
+       - Mostre como a referência está presa no "modelo ultrapassado".
+       - Posicione nosso produto como NOVA CATEGORIA → base do pitch.
 
-    4. **O Mecanismo Único**
-       - Apresente o Mecanismo Único do {topic}.
-       - Dê nome proprietário que soe técnico + exclusivo.
-       - Use analogia inédita, visual e memorável.
-       - Demonstre causalidade lógica:
-         “Quando X acontece → inevitavelmente Y acontece.”
-       - Prove por que funciona melhor que qualquer alternativa.
+    4. **O Mecanismo Único (coração do pitch)**
+       - Apresente o mecanismo proprietário do {topic}.
+       - Nome proprietário poderoso (ex: “Sistema Alpha-X”).
+       - Analogia inédita para memorização.
+       - Prove causalidade lógica → "se você aplicar isso, o resultado é inevitável".
 
-    5. **A Oferta Irresistível**
-       - Descreva os entregáveis com riqueza de detalhes.
-       - Construa Bônus que removem risco, obstáculos futuros e atritos.
-       - Faça ancoragem de preço profissional:
-         * Valor real percebido
-         * Preço convencional no mercado
-         * Investimento especial hoje
-       - Descreva a transformação final com storytelling:
-         “Aqui está quem você se torna.”
+    5. **O PITCH DE VENDAS / A OFERTA IRRESISTÍVEL**
+       - Apresente o produto como solução definitiva.
+       - Liste entregáveis com riqueza de detalhes.
+       - Apresente Bônus estratégicos.
+       - Faça ancoragem de preço de vendedor experiente:
+         * Valor Real
+         * Preço de Mercado
+         * Condição Especial
+         * Oferta do Dia
+       - Use linguagem de fechamento e autoridade.
 
     6. **Fechamento com Escassez Verdadeira**
-       - Escassez baseada em lógica REAL (nunca artificial).
-       - Mostre o custo emocional e financeiro de esperar.
-       - Fechamento com CTA forte, claro e emocionalmente inevitável.
+       - Crie urgência com lógica real e não artificial.
+       - Mostre o custo emocional e financeiro de adiar.
+       - CTA forte, inevitável, vendedor.
 
     ➤ **REGRAS DE EXECUÇÃO**
-      - Escreva de forma EXTREMAMENTE VERBOSA e COMPLETA.
-      - Linguagem emocional + técnica + narrativa.
-      - Use storytelling em blocos estratégicos.
-      - Use gatilhos mentais de forma natural e orgânica.
-      - Estrutura como um advogado imbatível apresentando evidências.
-      - Cada parágrafo deve fazer o leitor sentir: “Preciso disso AGORA.”
+      - PITCH DE VENDAS em toda a copy, do início ao fim.
+      - Texto EXTREMAMENTE verboso, emocional, técnico e narrativo.
+      - Use storytelling estratégico.
+      - Gatilhos mentais naturais, nunca forçados.
+      - Construção de advogado persuasivo + vendedor profissional.
 
     ➤ **OBS IMPORTANTES**
       - NÃO use ferramentas externas.
-      - NÃO copie nada da referência.
-      - Use somente:
-        * A auditoria fornecida
-        * Seu conhecimento profundo sobre {topic}
-        * A psicologia e dores do público {target_audience}
+      - NÃO copie nenhuma frase da referência.
+      - Use apenas:
+        * Auditoria do pesquisador
+        * Conhecimento sobre {topic}
+        * Psicologia do público {target_audience}
 
   expected_output: >
     Documento Markdown contendo:
 
-    1. **A Big Idea completa.**
-    2. **As 3 Headlines otimizadas.**
-    3. **A Carta de Vendas completa, longa, intensa e 100% persuasiva.**
-    4. **Notas explicativas detalhando como corrigiu falhas da referência**, ex:
-       - "> Nota: A referência não apresentou prova social, então incluí X."
-       - "> Nota: O concorrente não cria mecanismo exclusivo, então desenvolvi o Protocolo Y."
-       - "> Nota: A referência não usa ancoragem de preço corretamente; ajustei aqui."
+    1. A Big Idea.
+    2. As 3 Headlines.
+    3. O PITCH DE VENDAS completo dentro da Carta de Vendas.
+    4. Notas explicativas mostrando onde foram corrigidas falhas da referência.
+    5. Pitch final com CTA otimizado.
 
   agent: lead_copywriter
 
