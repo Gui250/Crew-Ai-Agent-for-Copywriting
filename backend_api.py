@@ -10,9 +10,33 @@ from pathlib import Path
 # Configura logging para suprimir erros de eventos do CrewAI (não críticos)
 # Nota: Erros "Expecting value: line 1 column 1" em handlers de eventos do CrewAI
 # são conhecidos e geralmente não afetam a funcionalidade principal
-logging.getLogger("crewai").setLevel(logging.WARNING)
-logging.getLogger("crewai.events").setLevel(logging.CRITICAL)  # Suprime todos os logs de eventos
-logging.getLogger("crewai.events.bus").setLevel(logging.CRITICAL)  # Suprime erros do EventsBus
+
+# Cria um filtro customizado para suprimir erros de eventos do CrewAI
+class CrewAIEventsFilter(logging.Filter):
+    def filter(self, record):
+        # Suprime mensagens relacionadas a erros de eventos do CrewAI
+        message = str(record.getMessage())
+        if any(keyword in message for keyword in [
+            "CrewAIEventsBus",
+            "on_agent_logs_execution",
+            "Expecting value: line 1 column 1",
+            "JSONDecodeError"
+        ]):
+            return False  # Não registra esta mensagem
+        return True  # Registra outras mensagens
+
+# Aplica o filtro aos loggers do CrewAI
+crewai_logger = logging.getLogger("crewai")
+crewai_logger.setLevel(logging.WARNING)
+crewai_logger.addFilter(CrewAIEventsFilter())
+
+events_logger = logging.getLogger("crewai.events")
+events_logger.setLevel(logging.CRITICAL)
+events_logger.addFilter(CrewAIEventsFilter())
+
+bus_logger = logging.getLogger("crewai.events.bus")
+bus_logger.setLevel(logging.CRITICAL)
+bus_logger.addFilter(CrewAIEventsFilter())
 
 # Suprime warnings de eventos do CrewAI que não afetam a funcionalidade
 import warnings
@@ -22,27 +46,58 @@ warnings.filterwarnings("ignore", message=".*JSONDecodeError.*")
 
 # Patch para suprimir erros de JSON parsing no EventsBus do CrewAI
 from io import StringIO
+import re
+
+class FilteredIO:
+    """IO wrapper que filtra mensagens específicas do CrewAI EventsBus"""
+    def __init__(self, original_io):
+        self.original_io = original_io
+        self.buffer = []
+    
+    def write(self, text):
+        # Filtra mensagens relacionadas a erros de eventos do CrewAI
+        if text:
+            # Padrões a filtrar
+            patterns_to_filter = [
+                r'\[CrewAIEventsBus\].*Sync handler error.*on_agent_logs_execution',
+                r'Expecting value: line 1 column 1 \(char 0\)',
+                r'JSONDecodeError.*Expecting value',
+            ]
+            
+            should_filter = False
+            for pattern in patterns_to_filter:
+                if re.search(pattern, text, re.IGNORECASE):
+                    should_filter = True
+                    break
+            
+            if not should_filter:
+                # Escreve no IO original apenas se não for um erro de eventos
+                self.original_io.write(text)
+                self.original_io.flush()
+    
+    def flush(self):
+        self.original_io.flush()
+    
+    def __getattr__(self, name):
+        # Delega outros atributos/métodos para o IO original
+        return getattr(self.original_io, name)
 
 class SuppressCrewAIEventsErrors:
     """Context manager para suprimir erros de eventos do CrewAI"""
     def __init__(self):
         self.original_stderr = sys.stderr
-        self.string_io = StringIO()
+        self.original_stdout = sys.stdout
+        self.filtered_stderr = FilteredIO(sys.stderr)
+        self.filtered_stdout = FilteredIO(sys.stdout)
     
     def __enter__(self):
-        sys.stderr = self.string_io
+        sys.stderr = self.filtered_stderr
+        sys.stdout = self.filtered_stdout
         return self
     
     def __exit__(self, exc_type, exc_val, exc_tb):
         sys.stderr = self.original_stderr
-        # Filtra apenas erros de eventos do CrewAI, mantém outros erros
-        output = self.string_io.getvalue()
-        if output:
-            # Se houver erros críticos (não relacionados a eventos), ainda os mostra
-            if "CrewAIEventsBus" not in output and "on_agent_logs_execution" not in output:
-                # Erro não relacionado a eventos - mostra
-                print(output, file=sys.stderr)
-            # Caso contrário, suprime silenciosamente
+        sys.stdout = self.original_stdout
         return False  # Não suprime exceções reais
 
 # Garante que o projeto esteja no path
