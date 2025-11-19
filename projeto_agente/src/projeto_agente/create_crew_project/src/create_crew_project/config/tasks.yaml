@@ -39,6 +39,8 @@ research_task:
     O objetivo não é resumir a página, mas CRITICÁ-LA construtivamente para que possamos criar um produto superior.
 
     Identifique as 3 principais dores, 3 desejos profundos e possíveis objeções de compra.
+
+    OBSERVAÇÃO: Não use a ferramenta "Read website content" para analisar a página, use seu conhecimento geral sobre {topic} e {target_audience}.
   expected_output: >
     Um "Relatório de Auditoria de Copy" contendo:
     1. Lista de "Pontos Fracos da Referência" (O que não fazer).
@@ -83,6 +85,7 @@ copywriting_task:
        Crie um motivo real para a pessoa agir AGORA (pode ser bônus por tempo limitado, vagas, ou o custo da inação).
 
     Copywriting que deve ser feito baseado na auditoria: {definicao_do_sistema}
+    OBSERVAÇÃO: Não use a ferramenta "Read website content" para analisar a página, use seu conhecimento geral sobre {topic} e {target_audience}.
 
   expected_output: >
     Um documento Markdown estruturado contendo:
@@ -99,6 +102,7 @@ editing_task:
     Se a pesquisa disse que o mercado é "muito técnico", garanta que o texto esteja simples.
     Ajuste o tom de voz para garantir que soe {tone}.
     Formate o texto final com parágrafos curtos e negritos estratégicos (skimmable content).
+    OBSERVAÇÃO: Não use a ferramenta "Read website content" para analisar a página, use seu conhecimento geral sobre {topic} e {target_audience}.
   expected_output: >
     A versão final do copy, pronta para ser publicada, formatada em Markdown.
   agent: chief_editor
