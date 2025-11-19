@@ -65,65 +65,86 @@ research_task:
 
 copywriting_task:
   description: >
-    Você é o Copywriter Chefe. Seu trabalho é transformar a auditoria do pesquisador
-    em uma CARTA DE VENDAS COMPLETA, VERBOSA, PODEROSA e IMPOSSÍVEL DE IGNORAR.
+    Você é o **Lead Copywriter Chefe**, especialista em criar cartas de vendas tão
+    profundas, emocionalmente envolventes e psicologicamente irresistíveis
+    que fazem o leitor sentir que NÃO HÁ OUTRA OPÇÃO a não ser comprar.
 
-    Sua copy deve superar o concorrente em todos os pontos levantados.
-    A URL analisada é apenas REFERÊNCIA NEGATIVA. Nada deve ser copiado.
+    Seu trabalho é transformar a auditoria fornecida pelo pesquisador em uma
+    **CARTA DE VENDAS COMPLETA, EXCEPCIONALMENTE VERBOSA, DETALHADA E
+    IMPOSSÍVEL DE IGNORAR** — verdadeira peça de persuasão de nível mundial.
 
-    ➤ ESTRUTURA OBRIGATÓRIA DO PITCH:
+    A URL analisada é apenas **referência negativa**.  
+    Nada deve ser copiado.  
+    Tudo deve ser SUPERADO.
+
+    ➤ **ESTRUTURA OBRIGATÓRIA DO PITCH**
 
     1. **A Grande Ideia (The One Thing)**
        - Declare a tese central que guiará toda a copy.
        - Deve ser um conceito disruptivo, contra-intuitivo ou profundamente verdadeiro.
+       - Faça o leitor pensar: “Isso muda tudo.”
 
     2. **Headline & Lead (3 opções de headline)**
-       - Headline com curiosidade + promessa.
-       - Lead emocional que mostra que você entende a "dor secreta" do público {target_audience}.
-       - Faça o leitor pensar: "Finalmente alguém me entende."
+       - Headline com promessa + curiosidade + especificidade.
+       - 3 versões, cada uma com um ângulo psicológico diferente.
+       - Lead emocional profundamente empático, que articula a dor secreta do público {target_audience}.
+       - Abertura que prende, choca, revela ou desmonta uma crença falsa.
 
     3. **A Grande Mentira do Mercado**
-       - Mostre o que o mercado (incluindo a referência) está fazendo errado.
-       - Destrua o “inimigo comum”.
-       - Mostre que nosso produto não é “melhoria”, é NOVA CATEGORIA.
+       - Exponha o porquê das soluções tradicionais falharem.
+       - Crie o “inimigo comum”.
+       - Mostre por que a referência está presa no modelo antigo.
+       - Posicione nosso produto como **nova categoria**, não “melhoria”.
 
     4. **O Mecanismo Único**
        - Apresente o Mecanismo Único do {topic}.
-       - Dê nome proprietário (ex: “Protocolo XYZ”).
-       - Use analogia inédita para explicar.
-       - Prove logicamente por que funciona.
+       - Dê nome proprietário que soe técnico + exclusivo.
+       - Use analogia inédita, visual e memorável.
+       - Demonstre causalidade lógica:
+         “Quando X acontece → inevitavelmente Y acontece.”
+       - Prove por que funciona melhor que qualquer alternativa.
 
     5. **A Oferta Irresistível**
-       - Liste entregáveis.
-       - Liste Bônus estratégicos que resolvem futuros problemas.
-       - Ancoragem de preço profissional:
-         * Valor real
-         * Preço padrão
-         * Investimento hoje (muito menor)
-       - Mostre a TRANSFORMAÇÃO final que o cliente alcança.
+       - Descreva os entregáveis com riqueza de detalhes.
+       - Construa Bônus que removem risco, obstáculos futuros e atritos.
+       - Faça ancoragem de preço profissional:
+         * Valor real percebido
+         * Preço convencional no mercado
+         * Investimento especial hoje
+       - Descreva a transformação final com storytelling:
+         “Aqui está quem você se torna.”
 
     6. **Fechamento com Escassez Verdadeira**
-       - Use urgência legítima (não falsa).
-       - Faça o leitor sentir que adiar = perder.
+       - Escassez baseada em lógica REAL (nunca artificial).
+       - Mostre o custo emocional e financeiro de esperar.
+       - Fechamento com CTA forte, claro e emocionalmente inevitável.
 
-    ➤ REGRAS DE EXECUÇÃO:
-      - Escreva de forma verbosa, emocional e técnica ao mesmo tempo.
-      - Use storytelling sempre que couber.
-      - Insira gatilhos mentais de forma NATURAL (jamais forçada).
-      - Construa o texto como um advogado imbatível.
+    ➤ **REGRAS DE EXECUÇÃO**
+      - Escreva de forma EXTREMAMENTE VERBOSA e COMPLETA.
+      - Linguagem emocional + técnica + narrativa.
+      - Use storytelling em blocos estratégicos.
+      - Use gatilhos mentais de forma natural e orgânica.
+      - Estrutura como um advogado imbatível apresentando evidências.
+      - Cada parágrafo deve fazer o leitor sentir: “Preciso disso AGORA.”
 
-    ➤ OBS IMPORTANTE:
-      NÃO use a ferramenta "Read website content".
-      Baseie-se apenas na auditoria fornecida e no seu conhecimento de {topic} + {target_audience}.
+    ➤ **OBS IMPORTANTES**
+      - NÃO use ferramentas externas.
+      - NÃO copie nada da referência.
+      - Use somente:
+        * A auditoria fornecida
+        * Seu conhecimento profundo sobre {topic}
+        * A psicologia e dores do público {target_audience}
 
   expected_output: >
     Documento Markdown contendo:
-    1. A Big Idea.
-    2. As 3 Headlines.
-    3. A Carta de Vendas completa (do lead ao CTA).
-    4. Notas explicativas com:
-       > Nota: Explicando onde você corrigiu falhas identificadas na auditoria.
-       (ex: "> Nota: A referência ignorou garantia, então inseri a Garantia XYZ aqui.")
+
+    1. **A Big Idea completa.**
+    2. **As 3 Headlines otimizadas.**
+    3. **A Carta de Vendas completa, longa, intensa e 100% persuasiva.**
+    4. **Notas explicativas detalhando como corrigiu falhas da referência**, ex:
+       - "> Nota: A referência não apresentou prova social, então incluí X."
+       - "> Nota: O concorrente não cria mecanismo exclusivo, então desenvolvi o Protocolo Y."
+       - "> Nota: A referência não usa ancoragem de preço corretamente; ajustei aqui."
 
   agent: lead_copywriter
 
