@@ -5,6 +5,8 @@ from typing import Optional
 import os
 import sys
 import logging
+import json
+import re
 from pathlib import Path
 
 # Configura logging para suprimir erros de eventos do CrewAI (não críticos)
@@ -23,10 +25,12 @@ class CrewAIEventsFilter(logging.Filter):
             "on_agent_logs_execution",
             "expecting value: line 1 column 1",
             "expecting value",
+            "expecting",  # Captura erros incompletos também
             "jsondecodeerror",
             "action 'none' don't exist",
             "action 'n/a' don't exist",
             "sync handler error",
+            "sync handler error in on_agent_logs_execution",
         ]
         
         # Verifica se a mensagem contém alguma palavra-chave de erro
@@ -68,7 +72,6 @@ warnings.filterwarnings("ignore", message=".*JSONDecodeError.*")
 
 # Patch para suprimir erros de JSON parsing no EventsBus do CrewAI
 from io import StringIO
-import re
 
 class FilteredIO:
     """IO wrapper que filtra mensagens específicas do CrewAI EventsBus com buffer para capturar mensagens multi-linha"""
@@ -143,9 +146,12 @@ class FilteredIO:
             'on_agent_logs_execution',
             'expecting value: line 1 column 1',
             'expecting value',
+            'expecting',  # Captura erros incompletos também
             'jsondecodeerror',
             "action 'none' don't exist",
             "action 'n/a' don't exist",
+            'sync handler error',
+            'sync handler error in on_agent_logs_execution',
         ]
         
         # Verifica palavras-chave primeiro (mais rápido)
@@ -156,11 +162,15 @@ class FilteredIO:
         # Padrões regex mais específicos
         patterns_to_filter = [
             r'\[CrewAIEventsBus\].*Sync handler error',
+            r'\[CrewAIEventsBus\].*Sync handler error.*on_agent_logs_execution',
             r'\[CrewAIEventsBus\].*Expecting',
+            r'\[CrewAIEventsBus\].*Expecting.*',
             r'Expecting value: line 1 column 1 \(char 0\)',
             r'Expecting value.*line 1 column 1',
+            r'Expecting.*',  # Captura qualquer erro que comece com "Expecting"
             r'JSONDecodeError.*Expecting',
             r'Sync handler error.*on_agent_logs_execution',
+            r'Sync handler error.*on_agent_logs_execution.*Expecting',
             r"Action 'None' don't exist",
             r"Action 'N/A' don't exist",
         ]
@@ -231,20 +241,51 @@ def disable_crewai_events():
                     try:
                         if original_handler and callable(original_handler):
                             return original_handler(*args, **kwargs)
-                    except (ValueError, Exception) as e:
+                    except (ValueError, json.JSONDecodeError, Exception) as e:
                         # Suprime especificamente erros de JSON parsing
                         error_str = str(e).lower()
-                        if any(keyword in error_str for keyword in [
-                            "expecting value", "json", "jsondecodeerror", 
-                            "line 1 column 1", "char 0"
-                        ]):
+                        error_type = type(e).__name__.lower()
+                        
+                        # Verifica se é um erro de JSON parsing
+                        is_json_error = (
+                            isinstance(e, json.JSONDecodeError) or
+                            "jsondecodeerror" in error_type or
+                            any(keyword in error_str for keyword in [
+                                "expecting value", "json", "jsondecodeerror", 
+                                "line 1 column 1", "char 0", "expecting"
+                            ])
+                        )
+                        
+                        if is_json_error:
                             # Suprime silenciosamente - não faz nada
                             return None
                         # Re-raise outros erros que não são relacionados a JSON
                         raise
                 
                 CrewAIEventsBus.on_agent_logs_execution = safe_wrapped_handler
-        except (ImportError, AttributeError):
+                
+            # Também tenta interceptar o método _handle_sync se existir
+            if hasattr(CrewAIEventsBus, '_handle_sync'):
+                original_sync_handler = getattr(CrewAIEventsBus, '_handle_sync', None)
+                
+                def safe_sync_handler(*args, **kwargs):
+                    """Handler sync que suprime erros de JSON parsing"""
+                    try:
+                        if original_sync_handler and callable(original_sync_handler):
+                            return original_sync_handler(*args, **kwargs)
+                    except (ValueError, json.JSONDecodeError, Exception) as e:
+                        error_str = str(e).lower()
+                        if any(keyword in error_str for keyword in [
+                            "expecting value", "json", "jsondecodeerror", 
+                            "line 1 column 1", "char 0", "expecting"
+                        ]):
+                            return None
+                        raise
+                
+                CrewAIEventsBus._handle_sync = safe_sync_handler
+                
+        except (ImportError, AttributeError) as e:
+            # Log silencioso se não conseguir importar
             pass
         
         # Abordagem 2: Tenta desabilitar eventos completamente
@@ -267,9 +308,11 @@ def disable_crewai_events():
             class FilteredHandler(logging.Handler):
                 def emit(self, record):
                     message = record.getMessage()
-                    if any(keyword in message.lower() for keyword in [
+                    message_lower = message.lower()
+                    if any(keyword in message_lower for keyword in [
                         "crewai eventsbus", "on_agent_logs_execution",
-                        "expecting value", "jsondecodeerror"
+                        "expecting value", "expecting", "jsondecodeerror",
+                        "sync handler error"
                     ]):
                         return  # Não emite a mensagem
                     # Para outras mensagens, usa o handler padrão
