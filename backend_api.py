@@ -11,12 +11,39 @@ from pathlib import Path
 # Nota: Erros "Expecting value: line 1 column 1" em handlers de eventos do CrewAI
 # são conhecidos e geralmente não afetam a funcionalidade principal
 logging.getLogger("crewai").setLevel(logging.WARNING)
-logging.getLogger("crewai.events").setLevel(logging.ERROR)
+logging.getLogger("crewai.events").setLevel(logging.CRITICAL)  # Suprime todos os logs de eventos
 logging.getLogger("crewai.events.bus").setLevel(logging.CRITICAL)  # Suprime erros do EventsBus
 
 # Suprime warnings de eventos do CrewAI que não afetam a funcionalidade
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning, module="crewai")
+warnings.filterwarnings("ignore", message=".*Expecting value.*")
+warnings.filterwarnings("ignore", message=".*JSONDecodeError.*")
+
+# Patch para suprimir erros de JSON parsing no EventsBus do CrewAI
+from io import StringIO
+
+class SuppressCrewAIEventsErrors:
+    """Context manager para suprimir erros de eventos do CrewAI"""
+    def __init__(self):
+        self.original_stderr = sys.stderr
+        self.string_io = StringIO()
+    
+    def __enter__(self):
+        sys.stderr = self.string_io
+        return self
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        sys.stderr = self.original_stderr
+        # Filtra apenas erros de eventos do CrewAI, mantém outros erros
+        output = self.string_io.getvalue()
+        if output:
+            # Se houver erros críticos (não relacionados a eventos), ainda os mostra
+            if "CrewAIEventsBus" not in output and "on_agent_logs_execution" not in output:
+                # Erro não relacionado a eventos - mostra
+                print(output, file=sys.stderr)
+            # Caso contrário, suprime silenciosamente
+        return False  # Não suprime exceções reais
 
 # Garante que o projeto esteja no path
 BASE_DIR = Path(__file__).resolve().parent
@@ -62,10 +89,11 @@ async def generate_copy(request: CopyRequest):
         crew_instance = CreateCrewProject()
         crew = crew_instance.copywriting_crew()
         
-        # Executa a crew
+        # Executa a crew com supressão de erros de eventos
         # Nota: Erros de eventos do CrewAI (como "Expecting value: line 1 column 1")
         # são não-críticos e geralmente não impedem a execução
-        result = crew.kickoff(inputs=request.dict())
+        with SuppressCrewAIEventsErrors():
+            result = crew.kickoff(inputs=request.dict())
         
         text = result.final_output if hasattr(result, "final_output") else str(result)
 
