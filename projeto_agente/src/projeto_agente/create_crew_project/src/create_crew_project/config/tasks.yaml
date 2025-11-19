@@ -1,79 +1,62 @@
-# tasks.yml
-
-market_research_task:
+research_task:
   description: >
-    Realizar uma análise profunda sobre o tópico {topic} e o público-alvo {target_audience}.
-    Identifique as 3 principais dores, 3 desejos profundos e possíveis objeções de compra.
-    Organize esses pontos como "ângulos de ataque" para o texto.
-    Análise que deve ser feita: {definicao_do_sistema}.
+    Realizar uma AUDITORIA CRÍTICA na URL de referência fornecida: {url}
+    focada no nicho: {topic}.
+
+    PASSO 1: ACESSO
+    Use a ferramenta de scraping para ler o conteúdo de {url}.
+    (Se a URL for inválida ou o scraping falhar, simule uma análise baseada no que é comum e clichê nesse mercado).
+
+    PASSO 2: ANÁLISE DE FRAQUEZAS (O que devemos fazer melhor)
+    Identifique na página de referência:
+    - Objeções que eles ignoraram ou não responderam bem.
+    - Promessas que soam falsas ou exageradas (para evitarmos).
+    - Trechos onde a leitura fica chata ou confusa.
+    - Oportunidades de conexão emocional que eles perderam.
+
+    PASSO 3: IDENTIFICAÇÃO DE ACERTOS
+    - O que eles fizeram bem que devemos modelar (mas não copiar)?
+
+    O objetivo não é resumir a página, mas CRITICÁ-LA construtivamente para que possamos criar um produto superior.
   expected_output: >
-    Um relatório de briefing detalhado contendo: Perfil do Cliente, 
-    Lista de Dores/Desejos e 3 sugestões de "Ganchos" (Hooks) para iniciar o texto.
+    Um "Relatório de Auditoria de Copy" contendo:
+    1. Lista de "Pontos Fracos da Referência" (O que não fazer).
+    2. Lista de "Oportunidades de Melhoria" (O que faremos no nosso).
+    3. Análise das 3 principais dores que a referência tentou atacar (e se conseguiu ou não).
   agent: market_researcher
 
 copywriting_task:
   description: >
-    Analise o seguinte produto técnico: {topic}.
+    Escreva uma Carta de Vendas (Sales Page) COMPLETA para o MEU negócio/produto focado em: {topic}.
 
-    1. Destrinche o mecanismo único desse produto (como ele funciona) usando uma analogia que uma criança de 10 anos entenderia.
+    CONTEXTO CRUCIAL:
+    Você NÃO deve reescrever a página da URL analisada.
+    Você deve criar uma copy NOVA para o meu produto, mas usando o "Relatório de Auditoria" do pesquisador como guia estratégico.
 
-    2. Encontre o ângulo emocional oculto (o que o cliente realmente deseja, não o que ele diz que quer).
+    INSTRUÇÕES:
+    1. Olhe para os "Pontos Fracos" que o pesquisador encontrou na referência. Sua copy deve resolver esses problemas de forma brilhante. (Ex: Se a referência é confusa, a sua deve ser ultra didática).
+    2. Destrinche o mecanismo único do MEU produto ({topic}).
+    3. Estrutura obrigatória:
+       - Headline (Promessa forte que bata na dor que a referência ignorou)
+       - Lead (História ou declaração que gere conexão imediata)
+       - A "Grande Mentira" (O erro comum do mercado que a referência comete e nós não)
+       - Solução/Mecanismo Único (Como o {topic} funciona)
+       - Oferta e Call to Action.
 
-    3. Escreva um Pitch de Vendas de 300 palavras usando a estrutura: Gancho (Quebra de Padrão) -> História -> Mecanismo Único -> Oferta Irresistível.
-
-    O tom deve ser provocativo, inteligente e persuasivo.
-
-    Copywriting que deve ser feito baseado no briefing: {definicao_do_sistema}
+    Tom de voz: Provocativo, Seguro e Superior (sem ser arrogante).
+    Copywriting que deve ser feito baseado na auditoria: {definicao_do_sistema}
   expected_output: >
-    Um rascunho completo do texto em formato Markdown, incluindo sugestões de 
-    título (headline) e o corpo do texto estruturado.
+    Um rascunho completo da Landing Page em formato Markdown. 
+    Deve incluir observações laterais do tipo: "> Nota: A referência falhou em explicar X, por isso aqui explicamos X com a analogia Y."
   agent: lead_copywriter
 
 editing_task:
   description: >
-    Revise o rascunho criado sobre {topic}. Verifique a gramática, a clareza e o fluxo da leitura.
-    Ajuste o tom de voz para garantir que soe {tone}. Verifique se a chamada para ação está forte.
-    Formate o texto final para ser visualmente agradável (uso de parágrafos curtos, negritos estratégicos).
-    Editing que deve ser feito baseado na copy: {definicao_do_sistema}.
+    Revise o rascunho criado sobre {topic}. 
+    Verifique se o Copywriter realmente superou os pontos fracos levantados na pesquisa.
+    Se a pesquisa disse que o mercado é "muito técnico", garanta que o texto esteja simples.
+    Ajuste o tom de voz para garantir que soe {tone}.
+    Formate o texto final com parágrafos curtos e negritos estratégicos (skimmable content).
   expected_output: >
-    A versão final do copy, pronta para ser publicada, formatada em Markdown, 
-    sem erros gramaticais e otimizada para leitura.
+    A versão final do copy, pronta para ser publicada, formatada em Markdown.
   agent: chief_editor
-
-research_task:
-  description: >
-    Realizar uma análise profunda sobre o tópico {topic} e o público-alvo {target_audience}.
-
-    IMPORTANTE: O usuário forneceu uma URL de referência: {url}
-
-    Se a URL for válida (começar com http:// ou https://) e NÃO for "Nenhuma URL fornecida. Use seu conhecimento geral.":
-    - Use a ferramenta de scraping disponível para você para ler o conteúdo da URL
-    - Se o scraping não funcionar ou retornar conteúdo bloqueado, continue com seu conhecimento geral
-
-    Se a URL for inválida ou não fornecida:
-    - Use seu conhecimento geral sobre {topic} e {target_audience}
-    - Prossiga normalmente com o briefing
-
-    Analise como eles abordam o problema e extraia insights chaves.
-    Identifique as 3 principais dores, 3 desejos profundos e possíveis objeções de compra.
-  expected_output: >
-    Um relatório de briefing detalhado contendo: Resumo da URL fornecida (se aplicável), Perfil do Cliente, 
-    Lista de Dores/Desejos e 3 sugestões de "Ganchos" (Hooks).
-  agent: market_researcher
-# ... suas outras tasks ...
-
-dashboard_task:
-  description: >
-    Analise os seguintes indicadores de marketing fornecidos: {data_context}.
-
-    Com base nesses dados, escreva um script Python completo usando a biblioteca Streamlit (`st`)
-    para gerar um dashboard visual.
-
-    Requisitos:
-    1. Use `st.columns` para exibir os KPIs principais (Cards com números grandes) no topo.
-    2. Crie pelo menos 2 gráficos visuais (ex: Vendas vs Leads, Distribuição de Custo) usando `st.bar_chart`, `st.line_chart` ou `plotly`.
-    3. O código deve ser autocontido (importar streamlit, pandas se necessário).
-    4. Se dados específicos foram fornecidos em data_context, use EXATAMENTE os números fornecidos. Caso contrário, use dados de exemplo relevantes para marketing.
-  expected_output: >
-    Um bloco de código Markdown (```python ... ```) contendo o script do dashboard.
-  agent: bi_analyst
