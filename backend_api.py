@@ -49,7 +49,7 @@ from io import StringIO
 import re
 
 class FilteredIO:
-    """IO wrapper que filtra mensagens específicas do CrewAI EventsBus"""
+    """IO wrapper que filtra mensagens específicas do CrewAI EventsBus de forma mais agressiva"""
     def __init__(self, original_io):
         self.original_io = original_io
         self.buffer = []
@@ -57,18 +57,41 @@ class FilteredIO:
     def write(self, text):
         # Filtra mensagens relacionadas a erros de eventos do CrewAI
         if text:
-            # Padrões a filtrar
+            # Padrões mais abrangentes a filtrar
             patterns_to_filter = [
                 r'\[CrewAIEventsBus\].*Sync handler error.*on_agent_logs_execution',
+                r'\[CrewAIEventsBus\].*Expecting',
                 r'Expecting value: line 1 column 1 \(char 0\)',
+                r'Expecting value.*line 1 column 1',
                 r'JSONDecodeError.*Expecting value',
+                r'JSONDecodeError',
+                r'on_agent_logs_execution.*Expecting',
+                r'Sync handler error.*on_agent_logs_execution',
+            ]
+            
+            # Também verifica por palavras-chave sem regex (mais rápido)
+            keywords_to_filter = [
+                'CrewAIEventsBus',
+                'on_agent_logs_execution',
+                'Expecting value: line 1 column 1',
+                'JSONDecodeError',
             ]
             
             should_filter = False
-            for pattern in patterns_to_filter:
-                if re.search(pattern, text, re.IGNORECASE):
+            
+            # Verifica palavras-chave primeiro (mais rápido)
+            text_lower = text.lower()
+            for keyword in keywords_to_filter:
+                if keyword.lower() in text_lower:
                     should_filter = True
                     break
+            
+            # Se não encontrou por palavras-chave, tenta regex
+            if not should_filter:
+                for pattern in patterns_to_filter:
+                    if re.search(pattern, text, re.IGNORECASE | re.DOTALL):
+                        should_filter = True
+                        break
             
             if not should_filter:
                 # Escreve no IO original apenas se não for um erro de eventos
@@ -112,50 +135,68 @@ except Exception as e:
 
 # Monkey patch para desabilitar handlers problemáticos do EventsBus
 def disable_crewai_events():
-    """Desabilita handlers problemáticos do CrewAI EventsBus"""
+    """Desabilita handlers problemáticos do CrewAI EventsBus de forma mais agressiva"""
     try:
-        # Tenta importar e modificar o EventsBus
+        # Abordagem 1: Intercepta diretamente o handler on_agent_logs_execution
         try:
             from crewai.events.bus import CrewAIEventsBus
             
-            # Cria um handler vazio que não faz nada (suprime erros)
-            def safe_handler(*args, **kwargs):
-                """Handler seguro que suprime erros de JSON parsing"""
-                try:
-                    # Tenta executar o handler original, mas suprime erros JSON
-                    pass
-                except Exception:
-                    # Suprime qualquer erro, especialmente JSONDecodeError
-                    pass
-            
-            # Substitui o handler problemático por um seguro
+            # Substitui o handler problemático por um que suprime erros JSON
             if hasattr(CrewAIEventsBus, 'on_agent_logs_execution'):
                 original_handler = getattr(CrewAIEventsBus, 'on_agent_logs_execution', None)
-                # Wraps o handler original com tratamento de erros
-                def wrapped_handler(*args, **kwargs):
+                
+                def safe_wrapped_handler(*args, **kwargs):
+                    """Handler que suprime erros de JSON parsing silenciosamente"""
                     try:
                         if original_handler and callable(original_handler):
                             return original_handler(*args, **kwargs)
                     except (ValueError, Exception) as e:
                         # Suprime especificamente erros de JSON parsing
                         error_str = str(e).lower()
-                        if "expecting value" in error_str or "json" in error_str:
-                            pass  # Suprime silenciosamente
-                        else:
-                            # Re-raise outros erros
-                            raise
+                        if any(keyword in error_str for keyword in [
+                            "expecting value", "json", "jsondecodeerror", 
+                            "line 1 column 1", "char 0"
+                        ]):
+                            # Suprime silenciosamente - não faz nada
+                            return None
+                        # Re-raise outros erros que não são relacionados a JSON
+                        raise
                 
-                CrewAIEventsBus.on_agent_logs_execution = wrapped_handler
-        except ImportError:
-            # Se não conseguir importar, tenta outras abordagens
+                CrewAIEventsBus.on_agent_logs_execution = safe_wrapped_handler
+        except (ImportError, AttributeError):
             pass
         
-        # Tenta desabilitar eventos completamente se possível
+        # Abordagem 2: Tenta desabilitar eventos completamente
         try:
             from crewai.events import EventsBus
             if hasattr(EventsBus, 'disable'):
                 EventsBus.disable()
-        except ImportError:
+        except (ImportError, AttributeError):
+            pass
+        
+        # Abordagem 3: Intercepta o logger do EventsBus diretamente
+        try:
+            import logging
+            events_logger = logging.getLogger("crewai.events.bus")
+            # Remove todos os handlers existentes e adiciona um filtrado
+            for handler in list(events_logger.handlers):
+                events_logger.removeHandler(handler)
+            
+            # Cria um handler customizado que filtra mensagens de erro
+            class FilteredHandler(logging.Handler):
+                def emit(self, record):
+                    message = record.getMessage()
+                    if any(keyword in message.lower() for keyword in [
+                        "crewai eventsbus", "on_agent_logs_execution",
+                        "expecting value", "jsondecodeerror"
+                    ]):
+                        return  # Não emite a mensagem
+                    # Para outras mensagens, usa o handler padrão
+                    print(f"[CrewAI] {message}", file=sys.stderr)
+            
+            events_logger.addHandler(FilteredHandler())
+            events_logger.setLevel(logging.CRITICAL)  # Só mostra críticos
+        except Exception:
             pass
             
     except Exception:
