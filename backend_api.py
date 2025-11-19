@@ -372,6 +372,11 @@ class CopyRequest(BaseModel):
     url: Optional[str] = None
     definicao_do_sistema: Optional[str] = None
 
+class DashboardRequest(BaseModel):
+    data_context: str
+    topic: Optional[str] = "Análise de Dados"
+    definicao_do_sistema: Optional[str] = None
+
 
 @app.get("/")
 def root():
@@ -417,6 +422,50 @@ async def generate_copy(request: CopyRequest):
                 "Se o problema persistir, verifique os logs do servidor."
             )
         raise HTTPException(500, f"Erro ao gerar copywriting: {error_msg}")
+
+@app.post("/api/dashboard")
+async def generate_dashboard(request: DashboardRequest):
+
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        raise HTTPException(500, "OPENAI_API_KEY não configurada no Render.")
+
+    try:
+        # Desabilita eventos problemáticos antes de criar a crew
+        disable_crewai_events()
+        
+        crew_instance = CreateCrewProject()
+        crew = crew_instance.dashboard_crew()
+        
+        # Prepara os inputs para a crew de dashboard
+        inputs = {
+            "data_context": request.data_context,
+            "topic": request.topic or "Análise de Dados",
+            "definicao_do_sistema": request.definicao_do_sistema or ""
+        }
+        
+        # Executa a crew com supressão de erros de eventos
+        with SuppressCrewAIEventsErrors():
+            result = crew.kickoff(inputs=inputs)
+        
+        text = result.final_output if hasattr(result, "final_output") else str(result)
+
+        return {"success": True, "result": text, "raw": text}
+
+    except Exception as e:
+        error_msg = str(e)
+        import traceback
+        print(f"❌ Erro ao gerar dashboard: {error_msg}")
+        print(f"📋 Traceback: {traceback.format_exc()}")
+        
+        # Se for apenas erro de eventos JSON, tenta retornar uma mensagem mais amigável
+        if "expecting value" in error_msg.lower() and "line 1 column 1" in error_msg.lower():
+            raise HTTPException(
+                500, 
+                "Erro ao processar eventos internos do CrewAI. Isso geralmente não afeta o resultado. "
+                "Se o problema persistir, verifique os logs do servidor."
+            )
+        raise HTTPException(500, f"Erro ao gerar dashboard: {error_msg}")
 
 
 if __name__ == "__main__":

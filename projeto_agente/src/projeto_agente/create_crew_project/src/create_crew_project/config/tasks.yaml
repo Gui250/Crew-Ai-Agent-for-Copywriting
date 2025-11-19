@@ -138,3 +138,51 @@ editing_task:
   expected_output: >
     A versão final do copy, pronta para ser publicada, formatada em Markdown.
   agent: chief_editor
+
+data_analysis_dashboard_task:
+  description: >
+    Você recebeu dados de marketing digital para análise. O arquivo pode ter sido enviado em CSV, XLSX,
+    ou até mesmo colado como texto bruto (tabelas, listas, colunas separadas por vírgula etc).
+
+    SUA MISSÃO:
+    1. Interpretar automaticamente o formato dos dados enviados.
+    2. Organizar a base de dados (limpeza, normalização, tratamento de erros e valores vazios).
+    3. Identificar métricas essenciais de marketing digital (se existirem):
+       - CPC, CPM, CTR, CPA, CPL, ROI, ROAS, CAC, LTV, Impressões, Cliques, Conversões.
+    4. Criar um DASHBOARD AUTOMÁTICO contendo:
+       - Tabelas organizadas com KPIs.
+       - Gráficos comparativos (tendências de CTR, CPC, ROI, conversões, etc).
+       - Ranking de campanhas/ads por performance.
+       - Identificação de oportunidades e pontos de vazamento no funil.
+       - Alertas de métricas ruins ou fora de padrão (ex: CPC acima do normal).
+       - Previsões simples (se aplicável) com base nos dados históricos.
+    5. Gerar um relatório narrativo que explique:
+       - Onde estão os gargalos.
+       - O que está funcionando bem.
+       - O que precisa ser ajustado imediatamente.
+       - Recomendações acionáveis (“faça X na campanha Y”, não fale generalidades).
+
+    IMPORTANTÍSSIMO:
+    - Você deve interpretar qualquer formato de dados enviado (arquivo ou texto).
+    - Se algum dado estiver ausente, incompleto ou misturado, você deve inferir padrões.
+    - O dashboard deve ser criado automaticamente com base nos dados que existem — não invente métricas que não aparecem.
+    - Explique suas conclusões de forma clara, simples e útil para gestores de marketing.
+
+    CASO OS DADOS SEJAM ENVIADOS EM TEXTO:
+    - Converta para tabela internamente.
+    - Continue normalmente.
+
+    CASO O ARQUIVO CHEGUE EM XLSX OU CSV:
+    - Leia, limpe e siga o fluxo padrão.
+
+  expected_output: >
+    Um relatório completo contendo:
+    1. Análise exploratória dos dados (métricas principais e distribuição).
+    2. Dashboard com gráficos e tabelas.
+    3. Insights estratégicos acionáveis.
+    4. Lista de "Oportunidades de Otimização".
+    5. Recomendações práticas (Growth Actions).
+    6. Alertas automáticos (ex.: "CTR abaixo do benchmark em X%", "CAC alto demais").
+    7. Explicação simples das tendências encontradas.
+
+  agent: market_science_analyst

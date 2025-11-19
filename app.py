@@ -210,18 +210,18 @@ if ferramenta == "✍️ Gerador de Copy":
 # ==============================================================================
 elif ferramenta == "📊 Dashboard Automático":
     
-    st.title("📊 Gerador de Dashboard")
-    st.markdown("Cole seus dados brutos ou envie um arquivo CSV e deixe a IA criar gráficos interativos.")
+    st.title("📊 Dashboard Automático Inteligente")
+    st.markdown("Envie uma planilha CSV ou Excel e receba um dashboard dinâmico e personalizado automaticamente!")
 
     # Inputs específicos desta ferramenta na Sidebar
     with st.sidebar:
         st.header("🔧 Dados")
         
-        # Opção 1: Upload de arquivo CSV
+        # Opção 1: Upload de arquivo CSV ou Excel
         uploaded_file = st.file_uploader(
-            "Ou envie um arquivo CSV:",
-            type=['csv'],
-            help="Faça upload de um arquivo CSV para análise automática"
+            "Envie um arquivo CSV ou Excel:",
+            type=['csv', 'xlsx', 'xls'],
+            help="Faça upload de um arquivo CSV ou Excel para análise automática"
         )
         
         st.markdown("---")
@@ -254,76 +254,121 @@ elif ferramenta == "📊 Dashboard Automático":
                 
                 if uploaded_file is not None:
                     try:
-                        # Lê o CSV e salva o conteúdo em bytes para reutilização
-                        file_bytes = uploaded_file.read()
-                        uploaded_file.seek(0)  # Reset para o início do arquivo
-                        
-                        # Tenta ler o CSV com diferentes codificações
                         import io
                         import chardet
                         
-                        # Detecta a codificação do arquivo
-                        detected = chardet.detect(file_bytes)
-                        encoding = detected.get('encoding', 'utf-8')
-                        confidence = detected.get('confidence', 0)
-                        
-                        # Lista de codificações para tentar (em ordem de prioridade)
-                        encodings_to_try = [
-                            encoding if confidence > 0.7 else None,  # Usa a detectada se confiança > 70%
-                            'utf-8',
-                            'latin-1',  # ISO-8859-1
-                            'iso-8859-1',
-                            'cp1252',   # Windows-1252
-                            'windows-1252',
-                            'utf-8-sig'  # UTF-8 com BOM
-                        ]
-                        
-                        # Remove None da lista
-                        encodings_to_try = [e for e in encodings_to_try if e is not None]
+                        # Detecta o tipo de arquivo pela extensão
+                        file_name = uploaded_file.name.lower()
+                        is_excel = file_name.endswith(('.xlsx', '.xls'))
+                        is_csv = file_name.endswith('.csv')
                         
                         df = None
                         encoding_used = None
-                        last_error = None
                         
-                        # Tenta cada codificação até uma funcionar
-                        for enc in encodings_to_try:
+                        if is_excel:
+                            # Lê arquivo Excel
                             try:
-                                uploaded_file.seek(0)  # Reset para o início
-                                # Tenta primeiro com separador padrão (vírgula)
-                                df = pd.read_csv(io.BytesIO(file_bytes), encoding=enc, sep=',')
+                                # Tenta ler todas as abas e pega a primeira
+                                uploaded_file.seek(0)
                                 
-                                # Se o DataFrame tem apenas 1 coluna, tenta com ponto e vírgula
-                                if df.shape[1] == 1:
-                                    uploaded_file.seek(0)
-                                    df = pd.read_csv(io.BytesIO(file_bytes), encoding=enc, sep=';')
+                                # Tenta primeiro com openpyxl (para .xlsx)
+                                try:
+                                    excel_file = pd.ExcelFile(uploaded_file, engine='openpyxl')
+                                    sheet_names = excel_file.sheet_names
+                                    df = pd.read_excel(uploaded_file, sheet_name=sheet_names[0], engine='openpyxl')
+                                    
+                                    if len(sheet_names) > 1:
+                                        st.info(f"📑 Arquivo Excel com {len(sheet_names)} abas. Usando a primeira aba: **{sheet_names[0]}**")
+                                except Exception as e1:
+                                    # Tenta com xlrd (para .xls antigos)
+                                    try:
+                                        uploaded_file.seek(0)
+                                        excel_file = pd.ExcelFile(uploaded_file, engine='xlrd')
+                                        sheet_names = excel_file.sheet_names
+                                        df = pd.read_excel(uploaded_file, sheet_name=sheet_names[0], engine='xlrd')
+                                        
+                                        if len(sheet_names) > 1:
+                                            st.info(f"📑 Arquivo Excel com {len(sheet_names)} abas. Usando a primeira aba: **{sheet_names[0]}**")
+                                    except Exception as e2:
+                                        # Se ambos falharem, tenta sem especificar engine
+                                        try:
+                                            uploaded_file.seek(0)
+                                            df = pd.read_excel(uploaded_file)
+                                        except Exception as e3:
+                                            raise Exception(f"Erro ao ler arquivo Excel. Tente instalar openpyxl (pip install openpyxl) ou xlrd (pip install xlrd). Erros: {str(e1)}, {str(e2)}, {str(e3)}")
                                 
-                                # Se ainda tem apenas 1 coluna, tenta com tab
-                                if df.shape[1] == 1:
-                                    uploaded_file.seek(0)
-                                    df = pd.read_csv(io.BytesIO(file_bytes), encoding=enc, sep='\t')
-                                
-                                encoding_used = enc
-                                break
-                            except (UnicodeDecodeError, UnicodeError) as e:
-                                last_error = e
-                                continue
                             except Exception as e:
-                                # Outros erros (não relacionados à codificação)
-                                last_error = e
-                                continue
+                                raise Exception(f"Erro ao ler arquivo Excel: {str(e)}. Certifique-se de que openpyxl ou xlrd estão instalados.")
                         
-                        if df is None:
-                            raise Exception(f"Não foi possível ler o arquivo CSV. Tentadas codificações: {', '.join(encodings_to_try)}. Último erro: {last_error}")
+                        elif is_csv:
+                            # Lê arquivo CSV com suporte a múltiplas codificações
+                            file_bytes = uploaded_file.read()
+                            uploaded_file.seek(0)
+                            
+                            # Detecta a codificação do arquivo
+                            detected = chardet.detect(file_bytes)
+                            encoding = detected.get('encoding', 'utf-8')
+                            confidence = detected.get('confidence', 0)
+                            
+                            # Lista de codificações para tentar (em ordem de prioridade)
+                            encodings_to_try = [
+                                encoding if confidence > 0.7 else None,
+                                'utf-8',
+                                'latin-1',
+                                'iso-8859-1',
+                                'cp1252',
+                                'windows-1252',
+                                'utf-8-sig'
+                            ]
+                            
+                            encodings_to_try = [e for e in encodings_to_try if e is not None]
+                            
+                            last_error = None
+                            
+                            # Tenta cada codificação até uma funcionar
+                            for enc in encodings_to_try:
+                                try:
+                                    uploaded_file.seek(0)
+                                    # Tenta primeiro com separador padrão (vírgula)
+                                    df = pd.read_csv(io.BytesIO(file_bytes), encoding=enc, sep=',')
+                                    
+                                    # Se o DataFrame tem apenas 1 coluna, tenta com ponto e vírgula
+                                    if df.shape[1] == 1:
+                                        uploaded_file.seek(0)
+                                        df = pd.read_csv(io.BytesIO(file_bytes), encoding=enc, sep=';')
+                                    
+                                    # Se ainda tem apenas 1 coluna, tenta com tab
+                                    if df.shape[1] == 1:
+                                        uploaded_file.seek(0)
+                                        df = pd.read_csv(io.BytesIO(file_bytes), encoding=enc, sep='\t')
+                                    
+                                    encoding_used = enc
+                                    break
+                                except (UnicodeDecodeError, UnicodeError) as e:
+                                    last_error = e
+                                    continue
+                                except Exception as e:
+                                    last_error = e
+                                    continue
+                            
+                            if df is None:
+                                raise Exception(f"Não foi possível ler o arquivo CSV. Tentadas codificações: {', '.join(encodings_to_try)}. Último erro: {last_error}")
+                            
+                            if encoding_used and encoding_used != 'utf-8':
+                                st.info(f"📝 Arquivo CSV lido com codificação: **{encoding_used}**")
+                        else:
+                            raise Exception(f"Formato de arquivo não suportado: {uploaded_file.name}")
                         
-                        if encoding_used and encoding_used != 'utf-8':
-                            st.info(f"📝 Arquivo lido com codificação: **{encoding_used}**")
+                        # Limpeza básica dos dados
+                        # Remove colunas completamente vazias
+                        df = df.dropna(axis=1, how='all')
+                        # Remove linhas completamente vazias
+                        df = df.dropna(axis=0, how='all')
                         
-                        # Cria um resumo do CSV (limitado para não exceder tokens)
-                        # Limita a quantidade de dados enviados
-                        max_rows_summary = min(10, df.shape[0])  # Máximo 10 linhas no resumo
-                        max_rows_full = min(50, df.shape[0])  # Máximo 50 linhas para análise
+                        # Cria um resumo do arquivo (limitado para não exceder tokens)
+                        max_rows_summary = min(10, df.shape[0])
                         
-                        # Pega uma amostra representativa (primeiras e últimas linhas)
+                        # Pega uma amostra representativa
                         if df.shape[0] > max_rows_summary:
                             sample_df = pd.concat([
                                 df.head(max_rows_summary // 2),
@@ -338,11 +383,13 @@ elif ferramenta == "📊 Dashboard Automático":
                         if len(numeric_cols) > 0:
                             stats_summary = f"\n- Estatísticas das colunas numéricas:\n{df[numeric_cols].describe().to_string()}"
                         
+                        file_type = "Excel" if is_excel else "CSV"
                         csv_summary = f"""
-                        ARQUIVO CSV CARREGADO:
+                        ARQUIVO {file_type} CARREGADO:
                         - Nome do arquivo: {uploaded_file.name}
                         - Dimensões: {df.shape[0]} linhas x {df.shape[1]} colunas
                         - Colunas: {', '.join(df.columns.tolist())}
+                        - Tipos de dados: {dict(df.dtypes)}
                         - Amostra de dados (primeiras e últimas linhas):
                         {sample_df.to_string()}
                         {stats_summary}
@@ -351,16 +398,19 @@ elif ferramenta == "📊 Dashboard Automático":
                         Use df diretamente no código, não precisa incluir todos os dados aqui.
                         """
                         
-                        # Marca que há CSV carregado (sem converter tudo para string - economiza tokens)
-                        csv_data = True  # Usa boolean para indicar que há CSV
+                        csv_data = True
                         data_context = csv_summary
                         
-                        st.write(f"✅ Arquivo CSV carregado: **{uploaded_file.name}** ({df.shape[0]} linhas, {df.shape[1]} colunas)")
+                        st.write(f"✅ Arquivo {file_type} carregado: **{uploaded_file.name}** ({df.shape[0]} linhas, {df.shape[1]} colunas)")
                         st.write(f"📊 Colunas: {', '.join(df.columns.tolist())}")
                         
+                        # Mostra preview dos dados
+                        with st.expander("👁️ Preview dos Dados", expanded=False):
+                            st.dataframe(df.head(10), use_container_width=True)
+                        
                     except Exception as e:
-                        st.error(f"Erro ao ler o arquivo CSV: {e}")
-                        status.update(label="Erro ao processar CSV", state="error")
+                        st.error(f"Erro ao ler o arquivo: {e}")
+                        status.update(label="Erro ao processar arquivo", state="error")
                         st.stop()
                 
                 # Se não há CSV, usa os dados de texto
@@ -389,8 +439,8 @@ elif ferramenta == "📊 Dashboard Automático":
                     columns_info = f"Colunas disponíveis no DataFrame: {columns_list}"
                     
                     inputs['definicao_do_sistema'] = f"""
-                    Você é um Data Scientist Senior Especialista em Streamlit.
-                    O usuário forneceu um arquivo CSV com os seguintes dados:
+                    Você é um Data Scientist Senior Especialista em Streamlit e Visualização de Dados.
+                    O usuário forneceu um arquivo com os seguintes dados:
                     
                     {csv_summary}
                     
@@ -399,51 +449,111 @@ elif ferramenta == "📊 Dashboard Automático":
                     REGRAS CRÍTICAS: 
                     - O DataFrame já está carregado e disponível APENAS como variável 'df' (não 'data_df', não 'df_data', apenas 'df').
                     - NÃO crie novas variáveis de DataFrame. Use APENAS 'df'.
-                    - NÃO tente ler o arquivo CSV novamente usando pd.read_csv() com o nome do arquivo.
+                    - NÃO tente ler o arquivo novamente usando pd.read_csv() ou pd.read_excel().
                     - Use APENAS a variável 'df' que já contém todos os dados.
                     - Use APENAS as colunas listadas acima. Verifique se a coluna existe antes de usá-la.
                     - Se uma coluna tiver espaços, use df['Nome da Coluna'] (com aspas).
                     - Sempre verifique se as colunas existem: if 'coluna' in df.columns:
                     - NÃO renomeie o DataFrame. Use 'df' diretamente.
                     
-                    Crie um script Python COMPLETO usando 'streamlit' para gerar um dashboard.
-                    - Use APENAS a variável 'df' que já está disponível (NÃO use pd.read_csv, NÃO crie data_df ou outras variáveis).
-                    - Use st.columns para exibir os KPIs principais (Cards com números grandes) no topo.
-                    - Crie pelo menos 2 gráficos visuais usando st.bar_chart, st.line_chart, st.area_chart ou plotly.
-                    - Use os dados EXATOS do DataFrame 'df', não invente dados.
-                    - O código deve ser autocontido e executável.
-                    - Sempre verifique se as colunas existem antes de usá-las.
-                    - Exemplo seguro: if 'coluna' in df.columns: st.write(df['coluna'])
-                    - NÃO inclua linhas como: df = pd.read_csv('nome_arquivo.csv') ou data_df = df.copy()
+                    Crie um script Python COMPLETO usando 'streamlit' para gerar um DASHBOARD SUPER BONITO, INTUITIVO E DINÂMICO:
+                    
+                    DESIGN E LAYOUT:
+                    - Use st.columns para criar um layout responsivo e organizado
+                    - Adicione títulos e subtítulos com st.title(), st.header(), st.subheader()
+                    - Use st.metric() para KPIs principais com formatação bonita (valores grandes, cores, delta)
+                    - Adicione separadores visuais com st.divider() ou st.markdown("---")
+                    - Use cores e formatação markdown para destacar informações importantes
+                    
+                    VISUALIZAÇÕES:
+                    - Identifique automaticamente colunas numéricas e categóricas
+                    - Crie gráficos adaptativos baseados nos tipos de dados disponíveis:
+                      * Para dados temporais: gráficos de linha ou área
+                      * Para comparações: gráficos de barras ou colunas
+                      * Para distribuições: histogramas ou box plots
+                      * Para correlações: heatmaps ou scatter plots
+                    - Use plotly.express para gráficos interativos e bonitos (px.bar, px.line, px.scatter, px.histogram, etc)
+                    - Se plotly não estiver disponível, use st.bar_chart, st.line_chart, st.area_chart
+                    - Adicione títulos descritivos aos gráficos
+                    
+                    KPIs E MÉTRICAS:
+                    - Calcule automaticamente métricas relevantes baseadas nas colunas disponíveis
+                    - Exiba KPIs principais em cards visuais no topo usando st.metric()
+                    - Formate números grandes com separadores de milhar e casas decimais apropriadas
+                    - Adicione indicadores de tendência (delta) quando possível
+                    
+                    INTERATIVIDADE:
+                    - Adicione filtros com st.selectbox, st.multiselect ou st.slider quando apropriado
+                    - Permita que o usuário explore os dados de forma interativa
+                    - Mostre tabelas interativas com st.dataframe() quando relevante
+                    
+                    ADAPTAÇÃO AUTOMÁTICA:
+                    - O dashboard deve se adaptar automaticamente à estrutura da planilha
+                    - Se houver colunas de data/tempo, use-as para análises temporais
+                    - Se houver colunas categóricas, crie agrupamentos e comparações
+                    - Se houver colunas numéricas, calcule estatísticas e tendências
+                    - Se a planilha tiver muitas colunas, foque nas mais importantes
+                    
+                    CÓDIGO:
+                    - O código deve ser autocontido e executável
+                    - Sempre verifique se as colunas existem antes de usá-las
+                    - Trate valores nulos e dados faltantes adequadamente
+                    - Use try/except para evitar erros se colunas não existirem
+                    - NÃO inclua linhas como: df = pd.read_csv() ou data_df = df.copy()
                     - Use diretamente: df.head(), df['coluna'], df.describe(), etc.
+                    - Importe todas as bibliotecas necessárias (pandas, plotly, streamlit, numpy se necessário)
+                    
+                    EXEMPLO DE ESTRUTURA:
+                    ```python
+                    import streamlit as st
+                    import pandas as pd
+                    import plotly.express as px
+                    import plotly.graph_objects as go
+                    
+                    # Título principal
+                    st.title("📊 Dashboard de Análise")
+                    
+                    # KPIs no topo
+                    col1, col2, col3, col4 = st.columns(4)
+                    with col1:
+                        st.metric("Total", df.shape[0], delta=None)
+                    # ... mais KPIs
+                    
+                    # Filtros interativos
+                    # ... filtros se necessário
+                    
+                    # Gráficos
+                    st.subheader("Visualizações")
+                    # ... gráficos adaptativos
+                    
+                    # Tabela de dados
+                    st.subheader("Dados Detalhados")
+                    st.dataframe(df, use_container_width=True)
+                    ```
                     """
                 else:
                     inputs['definicao_do_sistema'] = f"""
-                    Você é um Data Scientist Senior Especialista em Streamlit.
-                    Sua tarefa é ler os seguintes dados: "{data_context}".
+                    Você é um Data Scientist Senior Especialista em Streamlit e Visualização de Dados.
+                    Sua tarefa é analisar os seguintes dados: "{data_context}".
                     
-                    Crie um script Python COMPLETO usando 'streamlit' para gerar um dashboard.
-                    - Use st.columns para métricas (KPIs).
-                    - Use st.bar_chart ou st.line_chart para visualizações.
-                    - O código deve ser executável.
+                    Crie um script Python COMPLETO usando 'streamlit' para gerar um DASHBOARD SUPER BONITO, INTUITIVO E DINÂMICO:
+                    
+                    - Use st.columns para criar layout responsivo
+                    - Use st.metric() para KPIs principais com formatação bonita
+                    - Crie gráficos interativos com plotly.express (px.bar, px.line, px.scatter, etc)
+                    - Adicione títulos, subtítulos e separadores visuais
+                    - Use cores e formatação markdown para destacar informações
+                    - Adicione filtros interativos quando apropriado
+                    - O código deve ser autocontido e executável
+                    - Importe todas as bibliotecas necessárias
                     """
                 
                 try:
-                    # Prepara a requisição para o backend
-                    definicao_do_sistema = f"""
-                    Você é um Data Scientist Senior Especialista em Streamlit.
-                    Sua tarefa é ler os seguintes dados: "{data_context}".
-                    
-                    Crie um script Python COMPLETO usando 'streamlit' para gerar um dashboard.
-                    - Use st.columns para métricas (KPIs).
-                    - Use st.bar_chart ou st.line_chart para visualizações.
-                    - O código deve ser executável.
-                    """
-                    
+                    # Prepara a requisição para o backend usando a definição já criada
                     payload = {
                         "data_context": str(data_context),
-                        "topic": "Análise de Dados de Marketing",
-                        "definicao_do_sistema": definicao_do_sistema
+                        "topic": inputs.get('topic', 'Análise de Dados de Marketing'),
+                        "definicao_do_sistema": inputs.get('definicao_do_sistema', '')
                     }
                     
                     # Faz requisição ao backend
@@ -498,14 +608,18 @@ elif ferramenta == "📊 Dashboard Automático":
                             # Verifica e instala dependências necessárias se não estiverem disponíveis
                             import subprocess
                             import sys
-                            dependencies_to_check = ['plotly', 'pandas']
+                            dependencies_to_check = ['plotly', 'pandas', 'openpyxl']
                             for dep in dependencies_to_check:
                                 try:
                                     __import__(dep)
                                 except ImportError:
                                     st.info(f"📦 Instalando {dep}...")
-                                    subprocess.check_call([sys.executable, "-m", "pip", "install", dep, "-q"])
-                                    st.success(f"✅ {dep} instalado com sucesso!")
+                                    try:
+                                        subprocess.check_call([sys.executable, "-m", "pip", "install", dep, "-q"], 
+                                                             stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL)
+                                        st.success(f"✅ {dep} instalado com sucesso!")
+                                    except:
+                                        st.warning(f"⚠️ Não foi possível instalar {dep} automaticamente. Algumas funcionalidades podem não estar disponíveis.")
                             
                             # Se houver CSV, disponibiliza o DataFrame no contexto de execução
                             if csv_data and df is not None:
@@ -517,8 +631,8 @@ elif ferramenta == "📊 Dashboard Automático":
                                 code_lines = code_to_run.split('\n')
                                 filtered_lines = []
                                 for line in code_lines:
-                                    # Remove linhas que tentam ler CSV com pd.read_csv
-                                    if 'pd.read_csv' in line and ('uploaded_file' not in line.lower() and 'io.BytesIO' not in line):
+                                    # Remove linhas que tentam ler arquivos (CSV ou Excel)
+                                    if ('pd.read_csv' in line or 'pd.read_excel' in line) and ('uploaded_file' not in line.lower() and 'io.BytesIO' not in line):
                                         # Pula esta linha - o DataFrame já está disponível
                                         continue
                                     # Remove tentativas de criar variáveis de DataFrame (data_df, df_data, etc)
@@ -533,13 +647,36 @@ elif ferramenta == "📊 Dashboard Automático":
                                 code_to_run = '\n'.join(filtered_lines)
                                 
                                 # Usa o DataFrame já carregado
+                                # Importa bibliotecas necessárias para o contexto de execução
+                                try:
+                                    import plotly.express as px
+                                    import plotly.graph_objects as go
+                                    plotly_available = True
+                                except ImportError:
+                                    plotly_available = False
+                                    px = None
+                                    go = None
+                                
+                                try:
+                                    import numpy as np
+                                except ImportError:
+                                    np = None
+                                
                                 exec_globals = {
                                     'pd': pd,
+                                    'pandas': pd,
                                     'st': st,
+                                    'streamlit': st,
                                     'df': df,  # Usa o DataFrame já carregado
-                                    'pandas': pd,  # Alias adicional
-                                    'np': __import__('numpy') if 'numpy' in code_to_run else None
+                                    'np': np,
+                                    'numpy': np,
                                 }
+                                
+                                # Adiciona plotly se disponível
+                                if plotly_available:
+                                    exec_globals['px'] = px
+                                    exec_globals['plotly'] = __import__('plotly')
+                                    exec_globals['go'] = go
                                 
                                 # Remove None do dict
                                 exec_globals = {k: v for k, v in exec_globals.items() if v is not None}
@@ -547,10 +684,35 @@ elif ferramenta == "📊 Dashboard Automático":
                                 exec(code_to_run, exec_globals) # Executa o código gerado na tela
                             else:
                                 # Para dados de texto, executa normalmente
+                                try:
+                                    import plotly.express as px
+                                    import plotly.graph_objects as go
+                                    plotly_available = True
+                                except ImportError:
+                                    plotly_available = False
+                                    px = None
+                                    go = None
+                                
+                                try:
+                                    import numpy as np
+                                except ImportError:
+                                    np = None
+                                
                                 exec_globals = {
                                     'pd': pd,
-                                    'st': st
+                                    'pandas': pd,
+                                    'st': st,
+                                    'streamlit': st,
+                                    'np': np,
+                                    'numpy': np,
                                 }
+                                
+                                if plotly_available:
+                                    exec_globals['px'] = px
+                                    exec_globals['plotly'] = __import__('plotly')
+                                    exec_globals['go'] = go
+                                
+                                exec_globals = {k: v for k, v in exec_globals.items() if v is not None}
                                 exec(code_to_run, exec_globals) # Executa o código gerado na tela
                         except Exception as exec_error:
                             error_msg = str(exec_error)

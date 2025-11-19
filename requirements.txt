@@ -13,4 +13,8 @@ requests
 pandas
 chardet
 numpy
+plotly
+openpyxl
+xlrd
+streamlit
 

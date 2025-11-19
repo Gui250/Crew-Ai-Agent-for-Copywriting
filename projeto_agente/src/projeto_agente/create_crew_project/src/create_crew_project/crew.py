@@ -41,7 +41,7 @@ class CreateCrewProject():
     @agent
     def bi_analyst(self) -> Agent:
         return Agent(
-            config=self.agents_config['bi_analyst'],
+            config=self.agents_config['market_science_analyst'],
             verbose=True,
             llm="gpt-4o" # Recomendado GPT-4o ou Claude para gerar código de gráficos complexos
         )
@@ -50,7 +50,7 @@ class CreateCrewProject():
     @task
     def dashboard_task(self) -> Task:
         return Task(
-            config=self.tasks_config['dashboard_task'],
+            config=self.tasks_config['data_analysis_dashboard_task'],
             agent=self.bi_analyst()
         )
         
