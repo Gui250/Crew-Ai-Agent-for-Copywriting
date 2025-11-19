@@ -9,13 +9,15 @@ O Render não está instalando as dependências antes de executar o código.
 ### Opção 1: Configurar Manualmente no Dashboard (Recomendado)
 
 1. **Acesse o dashboard do Render:**
+
    - Vá em: https://dashboard.render.com
    - Selecione seu serviço
 
 2. **Vá em "Settings" > "Build & Deploy":**
 
 3. **Configure:**
-   - **Build Command:** 
+
+   - **Build Command:**
      ```
      pip install --upgrade pip && pip install -r requirements_backend.txt
      ```
@@ -31,6 +33,7 @@ O Render não está instalando as dependências antes de executar o código.
 O Render pode estar procurando por `requirements.txt` ao invés de `requirements_backend.txt`.
 
 **Solução rápida:**
+
 ```bash
 # Copiar o arquivo
 cp requirements_backend.txt requirements.txt
@@ -53,6 +56,7 @@ git push
 Se continuar com problemas, use Docker:
 
 1. **No Render, mude para Docker:**
+
    - **Environment:** `Docker`
    - **Dockerfile Path:** `Dockerfile.backend`
 
@@ -75,4 +79,3 @@ Successfully installed fastapi-0.104.1
 - [ ] Arquivo foi commitado e enviado ao GitHub
 - [ ] Variável `OPENAI_API_KEY` configurada
 - [ ] Novo deploy foi iniciado após as mudanças
-
