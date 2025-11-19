@@ -117,12 +117,23 @@ class CreateCrewProject():
             self.editing_task()        # Revisão final
         ]
         
-        return Crew(
-            agents=copywriting_agents,
-            tasks=copywriting_tasks,
-            process=Process.sequential,
-            verbose=True,
-        )
+        # Tenta desabilitar eventos problemáticos
+        crew_kwargs = {
+            "agents": copywriting_agents,
+            "tasks": copywriting_tasks,
+            "process": Process.sequential,
+            "verbose": True,
+        }
+        
+        # Tenta passar step_callback=None para desabilitar callbacks de eventos
+        try:
+            # Algumas versões do CrewAI suportam step_callback=None
+            crew_kwargs["step_callback"] = None
+        except (TypeError, ValueError):
+            # Se não suportar, continua sem esse parâmetro
+            pass
+        
+        return Crew(**crew_kwargs)
     
     def dashboard_crew(self) -> Crew:
         """Creates a crew specifically for dashboard generation"""

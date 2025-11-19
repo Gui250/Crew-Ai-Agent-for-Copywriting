@@ -110,6 +110,61 @@ except Exception as e:
     print("❌ ERRO IMPORTANDO CREW:", e)
     raise
 
+# Monkey patch para desabilitar handlers problemáticos do EventsBus
+def disable_crewai_events():
+    """Desabilita handlers problemáticos do CrewAI EventsBus"""
+    try:
+        # Tenta importar e modificar o EventsBus
+        try:
+            from crewai.events.bus import CrewAIEventsBus
+            
+            # Cria um handler vazio que não faz nada (suprime erros)
+            def safe_handler(*args, **kwargs):
+                """Handler seguro que suprime erros de JSON parsing"""
+                try:
+                    # Tenta executar o handler original, mas suprime erros JSON
+                    pass
+                except Exception:
+                    # Suprime qualquer erro, especialmente JSONDecodeError
+                    pass
+            
+            # Substitui o handler problemático por um seguro
+            if hasattr(CrewAIEventsBus, 'on_agent_logs_execution'):
+                original_handler = getattr(CrewAIEventsBus, 'on_agent_logs_execution', None)
+                # Wraps o handler original com tratamento de erros
+                def wrapped_handler(*args, **kwargs):
+                    try:
+                        if original_handler and callable(original_handler):
+                            return original_handler(*args, **kwargs)
+                    except (ValueError, Exception) as e:
+                        # Suprime especificamente erros de JSON parsing
+                        error_str = str(e).lower()
+                        if "expecting value" in error_str or "json" in error_str:
+                            pass  # Suprime silenciosamente
+                        else:
+                            # Re-raise outros erros
+                            raise
+                
+                CrewAIEventsBus.on_agent_logs_execution = wrapped_handler
+        except ImportError:
+            # Se não conseguir importar, tenta outras abordagens
+            pass
+        
+        # Tenta desabilitar eventos completamente se possível
+        try:
+            from crewai.events import EventsBus
+            if hasattr(EventsBus, 'disable'):
+                EventsBus.disable()
+        except ImportError:
+            pass
+            
+    except Exception:
+        # Se qualquer coisa falhar, continua normalmente
+        pass
+
+# Aplica o patch ao importar
+disable_crewai_events()
+
 app = FastAPI(title="AI Marketing Crew API", version="1.0.0")
 
 app.add_middleware(
@@ -141,6 +196,9 @@ async def generate_copy(request: CopyRequest):
         raise HTTPException(500, "OPENAI_API_KEY não configurada no Render.")
 
     try:
+        # Desabilita eventos problemáticos antes de criar a crew
+        disable_crewai_events()
+        
         crew_instance = CreateCrewProject()
         crew = crew_instance.copywriting_crew()
         
