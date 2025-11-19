@@ -132,16 +132,39 @@ if ferramenta == "✍️ Gerador de Copy":
                         timeout=300  # 5 minutos de timeout (processamento pode demorar)
                     )
                     
+                    # Verifica o content-type antes de tentar fazer parse JSON
+                    content_type = response.headers.get('content-type', '')
+                    
                     if response.status_code == 200:
-                        result_data = response.json()
-                        copy_text = result_data.get("result", "")
-                        
-                        if not copy_text:
-                            copy_text = result_data.get("raw", "Nenhum resultado retornado.")
-                        
-                        status.update(label="Copy Gerado com Sucesso!", state="complete", expanded=False)
+                        try:
+                            if 'application/json' in content_type:
+                                result_data = response.json()
+                                copy_text = result_data.get("result", "")
+                                
+                                if not copy_text:
+                                    copy_text = result_data.get("raw", "Nenhum resultado retornado.")
+                            else:
+                                # Se não for JSON, usa o texto direto
+                                copy_text = response.text
+                                if not copy_text:
+                                    copy_text = "Nenhum resultado retornado."
+                            
+                            status.update(label="Copy Gerado com Sucesso!", state="complete", expanded=False)
+                        except ValueError as json_error:
+                            # Erro ao fazer parse JSON
+                            st.error(f"❌ Erro ao processar resposta JSON: {json_error}")
+                            st.write(f"📄 Resposta recebida (texto): {response.text[:500]}")
+                            raise Exception(f"Resposta do backend não é JSON válido: {response.text[:200]}")
                     else:
-                        error_msg = response.json().get("detail", f"Erro {response.status_code}")
+                        # Trata erros HTTP
+                        try:
+                            if 'application/json' in content_type:
+                                error_data = response.json()
+                                error_msg = error_data.get("detail", error_data.get("message", f"Erro {response.status_code}"))
+                            else:
+                                error_msg = f"Erro {response.status_code}: {response.text[:200]}"
+                        except ValueError:
+                            error_msg = f"Erro {response.status_code}: {response.text[:200]}"
                         raise Exception(f"Erro do backend: {error_msg}")
                     
                     st.divider()
@@ -161,9 +184,20 @@ if ferramenta == "✍️ Gerador de Copy":
                 except requests.exceptions.ConnectionError:
                     status.update(label="Erro de Conexão", state="error")
                     st.error(f"❌ Não foi possível conectar ao backend em {BACKEND_URL}. Verifique se o serviço está online.")
+                except ValueError as json_error:
+                    # Erro de parsing JSON
+                    status.update(label="Erro de Formato", state="error")
+                    st.error(f"❌ Erro ao processar resposta do backend (não é JSON válido): {str(json_error)}")
+                    st.info("💡 Dica: Verifique se o backend está retornando JSON válido. Pode ser que o serviço esteja offline ou retornando HTML.")
                 except requests.exceptions.RequestException as e:
                     status.update(label="Erro na Requisição", state="error")
                     st.error(f"❌ Erro ao comunicar com o backend: {str(e)}")
+                    # Tenta mostrar mais detalhes se disponível
+                    if hasattr(e, 'response') and e.response is not None:
+                        with st.expander("🔍 Detalhes da Resposta"):
+                            st.write(f"Status Code: {e.response.status_code}")
+                            st.write(f"Headers: {dict(e.response.headers)}")
+                            st.write(f"Conteúdo: {e.response.text[:500]}")
                 except Exception as e:
                     status.update(label="Erro na Execução", state="error")
                     st.error(f"❌ Ocorreu um erro: {str(e)}")
@@ -422,13 +456,36 @@ elif ferramenta == "📊 Dashboard Automático":
                         timeout=300  # 5 minutos de timeout
                     )
                     
+                    # Verifica o content-type antes de tentar fazer parse JSON
+                    content_type = response.headers.get('content-type', '')
+                    
                     if response.status_code == 200:
-                        result_data = response.json()
-                        raw_result = result_data.get("result", result_data.get("raw", ""))
-                        
-                        status.update(label="Dashboard Criado!", state="complete", expanded=False)
+                        try:
+                            if 'application/json' in content_type:
+                                result_data = response.json()
+                                raw_result = result_data.get("result", result_data.get("raw", ""))
+                            else:
+                                # Se não for JSON, usa o texto direto
+                                raw_result = response.text
+                                if not raw_result:
+                                    raw_result = "Nenhum resultado retornado."
+                            
+                            status.update(label="Dashboard Criado!", state="complete", expanded=False)
+                        except ValueError as json_error:
+                            # Erro ao fazer parse JSON
+                            st.error(f"❌ Erro ao processar resposta JSON: {json_error}")
+                            st.write(f"📄 Resposta recebida (texto): {response.text[:500]}")
+                            raise Exception(f"Resposta do backend não é JSON válido: {response.text[:200]}")
                     else:
-                        error_msg = response.json().get("detail", f"Erro {response.status_code}")
+                        # Trata erros HTTP
+                        try:
+                            if 'application/json' in content_type:
+                                error_data = response.json()
+                                error_msg = error_data.get("detail", error_data.get("message", f"Erro {response.status_code}"))
+                            else:
+                                error_msg = f"Erro {response.status_code}: {response.text[:200]}"
+                        except ValueError:
+                            error_msg = f"Erro {response.status_code}: {response.text[:200]}"
                         raise Exception(f"Erro do backend: {error_msg}")
                     
                     st.subheader("Visualização")
@@ -526,9 +583,20 @@ elif ferramenta == "📊 Dashboard Automático":
                 except requests.exceptions.ConnectionError:
                     status.update(label="Erro de Conexão", state="error")
                     st.error(f"❌ Não foi possível conectar ao backend em {BACKEND_URL}. Verifique se o serviço está online.")
+                except ValueError as json_error:
+                    # Erro de parsing JSON
+                    status.update(label="Erro de Formato", state="error")
+                    st.error(f"❌ Erro ao processar resposta do backend (não é JSON válido): {str(json_error)}")
+                    st.info("💡 Dica: Verifique se o backend está retornando JSON válido. Pode ser que o serviço esteja offline ou retornando HTML.")
                 except requests.exceptions.RequestException as e:
                     status.update(label="Erro na Requisição", state="error")
                     st.error(f"❌ Erro ao comunicar com o backend: {str(e)}")
+                    # Tenta mostrar mais detalhes se disponível
+                    if hasattr(e, 'response') and e.response is not None:
+                        with st.expander("🔍 Detalhes da Resposta"):
+                            st.write(f"Status Code: {e.response.status_code}")
+                            st.write(f"Headers: {dict(e.response.headers)}")
+                            st.write(f"Conteúdo: {e.response.text[:500]}")
                 except Exception as e:
                     status.update(label="Erro na Execução", state="error")
                     st.error(f"❌ Erro na execução: {str(e)}")
