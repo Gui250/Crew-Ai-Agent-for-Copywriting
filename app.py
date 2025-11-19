@@ -13,7 +13,7 @@ if env_path.exists():
     load_dotenv(dotenv_path=env_path, override=False)
 
 # URL do Backend API (configurável via variável de ambiente ou usar padrão)
-BACKEND_URL = os.getenv('BACKEND_API_URL', 'https://crew-ai-agent-for-copywriting.onrender.com')
+BACKEND_URL = os.getenv('BACKEND_API_URL', 'https://crew-ai-agent-for-copywriting-1.onrender.com')
 
 # Remove barra final se houver
 BACKEND_URL = BACKEND_URL.rstrip('/')
