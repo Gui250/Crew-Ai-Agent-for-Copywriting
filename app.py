@@ -1,27 +1,29 @@
 import streamlit as st
-import sys
-from pathlib import Path
-from dotenv import load_dotenv
+import requests
 import os
 import pandas as pd # Importado para o dashboard
 import re # Importado para extrair código do dashboard
+from dotenv import load_dotenv
+from pathlib import Path
 
 # --- CONFIGURAÇÃO INICIAL ---
-# Adiciona o caminho do módulo ao sys.path
-project_path = Path(__file__).parent / "projeto_agente" / "src" / "projeto_agente" / "create_crew_project" / "src" / "create_crew_project"
-sys.path.insert(0, str(project_path))
-
-# Carrega variáveis de ambiente
+# Carrega variáveis de ambiente (apenas para configuração local)
 env_path = Path(__file__).parent / ".env"
-if not env_path.exists():
-    env_path = Path(__file__).parent / "projeto_agente" / ".env"
 if env_path.exists():
-    load_dotenv(dotenv_path=env_path, override=True)
+    load_dotenv(dotenv_path=env_path, override=False)
 
-from crew import CreateCrewProject
-from crewai import Crew, Process
+# URL do Backend API (configurável via variável de ambiente ou usar padrão)
+BACKEND_URL = os.getenv('BACKEND_API_URL', 'https://crew-ai-agent-for-copywriting.onrender.com')
+
+# Remove barra final se houver
+BACKEND_URL = BACKEND_URL.rstrip('/')
 
 st.set_page_config(page_title="AI Marketing Crew", page_icon="🚀", layout="wide")
+
+# Mostra informações do backend na sidebar (apenas em desenvolvimento)
+if os.getenv('STREAMLIT_ENV') != 'production':
+    with st.sidebar:
+        st.caption(f"🔗 Backend: {BACKEND_URL}")
 
 # --- MENU DE NAVEGAÇÃO ---
 with st.sidebar:
@@ -104,28 +106,43 @@ if ferramenta == "✍️ Gerador de Copy":
                 st.write("✅ **Agente 3:** Editor Chefe finalizou o polimento...")
 
                 try:
-                    # Aqui você pode ajustar o 'definicao_do_sistema' para focar em COPY
-                    inputs['definicao_do_sistema'] = f"""
+                    # Prepara a requisição para o backend
+                    definicao_do_sistema = f"""
                     Sistema de criação de briefing e copywriting para {topic}.
                     O briefing deve conter: Perfil do Cliente, Dores/Desejos e Ganchos.
                     O copywriting deve seguir o framework PAS.
                     """
                     
-                    crew_instance = CreateCrewProject()
-                    # Usar crew de copywriting (sem dashboard_task) para evitar erro de data_context
-                    result = crew_instance.copywriting_crew().kickoff(inputs=inputs)
+                    payload = {
+                        "topic": topic,
+                        "target_audience": target_audience,
+                        "platform": platform,
+                        "tone": tone,
+                        "url": url_input,
+                        "definicao_do_sistema": definicao_do_sistema
+                    }
                     
-                    status.update(label="Copy Gerado com Sucesso!", state="complete", expanded=False)
+                    # Faz requisição ao backend
+                    api_url = f"{BACKEND_URL}/api/copywriting"
+                    st.write(f"🌐 Conectando ao backend: {BACKEND_URL}")
                     
-                    # Tratamento do Output (igual ao seu código)
-                    copy_text = ""
-                    if hasattr(result, 'tasks_output') and result.tasks_output:
-                        for task_output in reversed(result.tasks_output):
-                            if task_output and isinstance(task_output, str):
-                                copy_text = task_output
-                                break
-                    if not copy_text:
-                        copy_text = str(result.raw) if hasattr(result, 'raw') else str(result)
+                    response = requests.post(
+                        api_url,
+                        json=payload,
+                        timeout=300  # 5 minutos de timeout (processamento pode demorar)
+                    )
+                    
+                    if response.status_code == 200:
+                        result_data = response.json()
+                        copy_text = result_data.get("result", "")
+                        
+                        if not copy_text:
+                            copy_text = result_data.get("raw", "Nenhum resultado retornado.")
+                        
+                        status.update(label="Copy Gerado com Sucesso!", state="complete", expanded=False)
+                    else:
+                        error_msg = response.json().get("detail", f"Erro {response.status_code}")
+                        raise Exception(f"Erro do backend: {error_msg}")
                     
                     st.divider()
                     st.subheader("📄 Copy Finalizado")
@@ -138,9 +155,21 @@ if ferramenta == "✍️ Gerador de Copy":
                         mime="text/markdown"
                     )
                     
+                except requests.exceptions.Timeout:
+                    status.update(label="Timeout", state="error")
+                    st.error("⏱️ O processamento está demorando muito. Tente novamente ou use dados menores.")
+                except requests.exceptions.ConnectionError:
+                    status.update(label="Erro de Conexão", state="error")
+                    st.error(f"❌ Não foi possível conectar ao backend em {BACKEND_URL}. Verifique se o serviço está online.")
+                except requests.exceptions.RequestException as e:
+                    status.update(label="Erro na Requisição", state="error")
+                    st.error(f"❌ Erro ao comunicar com o backend: {str(e)}")
                 except Exception as e:
                     status.update(label="Erro na Execução", state="error")
-                    st.error(f"Ocorreu um erro: {str(e)}")
+                    st.error(f"❌ Ocorreu um erro: {str(e)}")
+                    import traceback
+                    with st.expander("🔍 Detalhes do Erro"):
+                        st.code(traceback.format_exc())
 
 # ==============================================================================
 # ABA 2: DASHBOARD AUTOMÁTICO (Nova Ferramenta)
@@ -365,47 +394,42 @@ elif ferramenta == "📊 Dashboard Automático":
                     - O código deve ser executável.
                     """
                 
-                # Debug: verificar inputs antes de passar para a crew
-                st.write(f"🔍 **Debug - Inputs sendo passados:** {list(inputs.keys())}")
-                st.write(f"🔍 **Debug - data_context presente:** {'data_context' in inputs}")
-                st.write(f"🔍 **Debug - data_context valor (primeiros 100 chars):** {str(inputs.get('data_context', 'NÃO ENCONTRADO'))[:100]}...")
-
                 try:
-                    # Criando uma crew customizada apenas com a dashboard_task
-                    crew_instance = CreateCrewProject()
+                    # Prepara a requisição para o backend
+                    definicao_do_sistema = f"""
+                    Você é um Data Scientist Senior Especialista em Streamlit.
+                    Sua tarefa é ler os seguintes dados: "{data_context}".
                     
-                    # Criar a task manualmente para garantir que os inputs sejam passados
-                    from crewai import Task
-                    dashboard_task = Task(
-                        description=f"""
-                        Analise os seguintes indicadores de marketing fornecidos: {inputs['data_context']}.
-
-                        Com base nesses dados, escreva um script Python completo usando a biblioteca Streamlit (`st`)
-                        para gerar um dashboard visual.
-
-                        Requisitos:
-                        1. Use `st.columns` para exibir os KPIs principais (Cards com números grandes) no topo.
-                        2. Crie pelo menos 2 gráficos visuais (ex: Vendas vs Leads, Distribuição de Custo) usando `st.bar_chart`, `st.line_chart` ou `plotly`.
-                        3. O código deve ser autocontido (importar streamlit, pandas se necessário).
-                        4. Não use dados fictícios, use EXATAMENTE os números fornecidos nos inputs.
-                        """,
-                        expected_output="Um bloco de código Markdown (```python ... ```) contendo o script do dashboard.",
-                        agent=crew_instance.bi_analyst()
+                    Crie um script Python COMPLETO usando 'streamlit' para gerar um dashboard.
+                    - Use st.columns para métricas (KPIs).
+                    - Use st.bar_chart ou st.line_chart para visualizações.
+                    - O código deve ser executável.
+                    """
+                    
+                    payload = {
+                        "data_context": str(data_context),
+                        "topic": "Análise de Dados de Marketing",
+                        "definicao_do_sistema": definicao_do_sistema
+                    }
+                    
+                    # Faz requisição ao backend
+                    api_url = f"{BACKEND_URL}/api/dashboard"
+                    st.write(f"🌐 Conectando ao backend: {BACKEND_URL}")
+                    
+                    response = requests.post(
+                        api_url,
+                        json=payload,
+                        timeout=300  # 5 minutos de timeout
                     )
                     
-                    # Criar crew apenas com a task de dashboard
-                    dashboard_crew = Crew(
-                        agents=[crew_instance.bi_analyst()],
-                        tasks=[dashboard_task],
-                        process=Process.sequential,
-                        verbose=True
-                    )
-                    result = dashboard_crew.kickoff(inputs=inputs)
-                    
-                    status.update(label="Dashboard Criado!", state="complete", expanded=False)
-                    
-                    # Tratamento do Output
-                    raw_result = str(result.raw) if hasattr(result, 'raw') else str(result)
+                    if response.status_code == 200:
+                        result_data = response.json()
+                        raw_result = result_data.get("result", result_data.get("raw", ""))
+                        
+                        status.update(label="Dashboard Criado!", state="complete", expanded=False)
+                    else:
+                        error_msg = response.json().get("detail", f"Erro {response.status_code}")
+                        raise Exception(f"Erro do backend: {error_msg}")
                     
                     st.subheader("Visualização")
                     
@@ -496,5 +520,18 @@ elif ferramenta == "📊 Dashboard Automático":
                         st.info("A IA não retornou um bloco de código executável. Veja a análise abaixo:")
                         st.write(raw_result)
                         
+                except requests.exceptions.Timeout:
+                    status.update(label="Timeout", state="error")
+                    st.error("⏱️ O processamento está demorando muito. Tente novamente ou use dados menores.")
+                except requests.exceptions.ConnectionError:
+                    status.update(label="Erro de Conexão", state="error")
+                    st.error(f"❌ Não foi possível conectar ao backend em {BACKEND_URL}. Verifique se o serviço está online.")
+                except requests.exceptions.RequestException as e:
+                    status.update(label="Erro na Requisição", state="error")
+                    st.error(f"❌ Erro ao comunicar com o backend: {str(e)}")
                 except Exception as e:
-                    st.error(f"Erro na execução: {e}")
+                    status.update(label="Erro na Execução", state="error")
+                    st.error(f"❌ Erro na execução: {str(e)}")
+                    import traceback
+                    with st.expander("🔍 Detalhes do Erro"):
+                        st.code(traceback.format_exc())

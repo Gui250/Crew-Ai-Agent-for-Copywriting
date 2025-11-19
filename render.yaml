@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: ai-marketing-crew
+    env: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: AGENTOPS_API_KEY
+        sync: false
+        optional: true
+    healthCheckPath: /
+

@@ -1,0 +1,38 @@
+2025-11-19 15:49:39,625 - INFO - Session Replay for default trace: https://app.agentops.ai/sessions?trace_id=12001d193c72c55c51f3cdebfeb2cf89
+2025-11-19 15:49:39,760 - ERROR - Failed to instrument CrewaiInstrumentor for agentops.instrumentation.agentic.crewai: cannot import name 'Agent' from partially initialized module 'crewai.agent' (most likely due to a circular import) (/Users/guilhermemoreno/Desktop/crew/venv/lib/python3.13/site-packages/crewai/agent/__init__.py)
+Traceback (most recent call last):
+  File "/Users/guilhermemoreno/Desktop/crew/venv/lib/python3.13/site-packages/agentops/instrumentation/__init__.py", line 511, in instrument_one
+    instrumentor.instrument(tracer_provider=tracer.provider)
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/guilhermemoreno/Desktop/crew/venv/lib/python3.13/site-packages/opentelemetry/instrumentation/instrumentor.py", line 125, in instrument
+    result = self._instrument(  # pylint: disable=assignment-from-no-return
+        **kwargs
+    )
+  File "/Users/guilhermemoreno/Desktop/crew/venv/lib/python3.13/site-packages/agentops/instrumentation/common/instrumentor.py", line 63, in _instrument
+    self._custom_wrap(**kwargs)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/Users/guilhermemoreno/Desktop/crew/venv/lib/python3.13/site-packages/agentops/instrumentation/agentic/crewai/instrumentation.py", line 105, in _custom_wrap
+    wrap_function_wrapper(
+    ~~~~~~~~~~~~~~~~~~~~~^
+        "crewai.crew",
+        ^^^^^^^^^^^^^^
+        "Crew.kickoff",
+        ^^^^^^^^^^^^^^^
+        create_wrapper_factory(wrap_kickoff_impl, self._metrics, attr_manager)(self._tracer),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/guilhermemoreno/Desktop/crew/venv/lib/python3.13/site-packages/wrapt/patches.py", line 114, in wrap_function_wrapper
+    return wrap_object(module, name, FunctionWrapper, (wrapper,))
+  File "/Users/guilhermemoreno/Desktop/crew/venv/lib/python3.13/site-packages/wrapt/patches.py", line 60, in wrap_object
+    (parent, attribute, original) = resolve_path(module, name)
+                                    ~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "/Users/guilhermemoreno/Desktop/crew/venv/lib/python3.13/site-packages/wrapt/patches.py", line 17, in resolve_path
+    __import__(module)
+    ~~~~~~~~~~^^^^^^^^
+  File "/Users/guilhermemoreno/Desktop/crew/venv/lib/python3.13/site-packages/agentops/instrumentation/__init__.py", line 387, in _import_monitor
+    module = _original_builtins_import(name, globals_dict, locals_dict, fromlist, level)
+  File "/Users/guilhermemoreno/Desktop/crew/venv/lib/python3.13/site-packages/crewai/crew.py", line 34, in <module>
+    from crewai.agent import Agent
+ImportError: cannot import name 'Agent' from partially initialized module 'crewai.agent' (most likely due to a circular import) (/Users/guilhermemoreno/Desktop/crew/venv/lib/python3.13/site-packages/crewai/agent/__init__.py)
+2025-11-19 15:49:40,439 - INFO - You're on the agentops free plan 🤔
