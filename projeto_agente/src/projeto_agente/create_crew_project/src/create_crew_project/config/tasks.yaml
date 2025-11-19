@@ -1,0 +1,80 @@
+# tasks.yml
+
+market_research_task:
+  description: >
+    Realizar uma análise profunda sobre o tópico {topic} e o público-alvo {target_audience}.
+    Identifique as 3 principais dores, 3 desejos profundos e possíveis objeções de compra.
+    Organize esses pontos como "ângulos de ataque" para o texto.
+    Análise que deve ser feita: {definicao_do_sistema}.
+  expected_output: >
+    Um relatório de briefing detalhado contendo: Perfil do Cliente, 
+    Lista de Dores/Desejos e 3 sugestões de "Ganchos" (Hooks) para iniciar o texto.
+  agent: market_researcher
+
+copywriting_task:
+  description: >
+    Utilizando o relatório de briefing criado na tarefa anterior, escreva um texto completo
+    para a plataforma {platform}. Utilize o framework PAS (Problema, Agitação, Solução).
+    O texto deve ser envolvente, focar nos benefícios e não apenas nas características,
+    e terminar com uma chamada para ação (CTA) clara.
+    Copywriting que deve ser feito baseado no briefing: {definicao_do_sistema}
+  expected_output: >
+    Um rascunho completo do texto em formato Markdown, incluindo sugestões de 
+    título (headline) e o corpo do texto estruturado.
+  agent: lead_copywriter
+
+editing_task:
+  description: >
+    Revise o rascunho criado sobre {topic}. Verifique a gramática, a clareza e o fluxo da leitura.
+    Ajuste o tom de voz para garantir que soe {tone}. Verifique se a chamada para ação está forte.
+    Formate o texto final para ser visualmente agradável (uso de parágrafos curtos, negritos estratégicos).
+    Editing que deve ser feito baseado na copy: {definicao_do_sistema}.
+  expected_output: >
+    A versão final do copy, pronta para ser publicada, formatada em Markdown, 
+    sem erros gramaticais e otimizada para leitura.
+  agent: chief_editor
+
+research_task:
+  description: >
+    Realizar uma análise profunda sobre o tópico {topic} e o público-alvo {target_audience}.
+
+    IMPORTANTE: O usuário forneceu uma URL de referência: {url}
+
+    REGRAS PARA USAR A FERRAMENTA DE SCRAPING:
+
+    CASO 1 - URL INVÁLIDA OU NÃO FORNECIDA:
+    Se a URL for "Nenhuma URL fornecida. Use seu conhecimento geral." ou estiver vazia:
+    - NÃO use a ferramenta de scraping
+    - NÃO tente criar ações customizadas
+    - Vá direto para a análise usando seu conhecimento geral sobre {topic} e {target_audience}
+    - Prossiga normalmente com o briefing
+
+    CASO 2 - URL VÁLIDA:
+    Se a URL começar com "http://" ou "https://" e NÃO for "Nenhuma URL fornecida...":
+    - Você DEVE tentar usar a ferramenta "Read website content"
+    - A ferramenta requer EXATAMENTE o parâmetro "website_url" (NUNCA use "url" ou outro nome)
+    - Formato OBRIGATÓRIO: {{"website_url": "{url}"}}
+    - Use EXATAMENTE a URL fornecida: {url}
+
+    Exemplo de uso correto:
+    Action: Read website content
+    Action Input: {{"website_url": "{url}"}}
+
+    CASO 3 - SCRAPING FALHOU:
+    Se o scraping retornar apenas mensagens como "Just a moment...", "Enable JavaScript", 
+    "Access denied" ou conteúdo vazio:
+    - Isso significa que o site bloqueou o acesso
+    - NÃO tente usar a ferramenta novamente
+    - NÃO crie ações customizadas
+    - Use seu conhecimento geral sobre o tópico {topic} e público-alvo {target_audience}
+    - Continue normalmente criando o briefing
+
+    LEMBRE-SE: Você só pode usar as ferramentas disponíveis. Se não conseguir fazer scraping,
+    simplesmente prossiga com seu conhecimento geral. NUNCA tente criar ações que não existem.
+
+    Analise como eles abordam o problema e extraia insights chaves.
+    Identifique as 3 principais dores, 3 desejos profundos e possíveis objeções de compra.
+  expected_output: >
+    Um relatório de briefing detalhado contendo: Resumo da URL fornecida (se aplicável), Perfil do Cliente, 
+    Lista de Dores/Desejos e 3 sugestões de "Ganchos" (Hooks).
+  agent: market_researcher

@@ -1,0 +1,9 @@
+crewai
+crewai-tools
+chroma-hnswlib
+crewai-tools
+agentops
+imbox
+setuptools
+requests
+streamlit
